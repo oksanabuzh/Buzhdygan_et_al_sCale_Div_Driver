@@ -22,5 +22,5 @@ For any questions please ask Oksana Buzhdygan [email](mailto:oksana.buzh@fu-berl
 | -------------- | ---------------------------------------------- |
 | [analysis](analysis)       | Analysis scripts for PCA and mixed models      |
 | [data](data)   | Data that are used for analysis                |
-| results        | Result outputs from the analysis               |
+| [results](results)       | Result outputs from the analysis               |
 |                |                                                |
