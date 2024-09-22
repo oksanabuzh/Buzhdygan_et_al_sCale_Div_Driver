@@ -20,7 +20,7 @@ For any questions please ask Oksana Buzhdygan [email](mailto:oksana.buzh@fu-berl
 
 | Folder         | What's inside                                  |
 | -------------- | ---------------------------------------------- |
-| analysis       | Analysis scripts for PCA and mixed models      |
+| [analysis](analysis)       | Analysis scripts for PCA and mixed models      |
 | [data](data)   | Data that are used for analysis                |
 | results        | Result outputs from the analysis               |
 |                |                                                |
