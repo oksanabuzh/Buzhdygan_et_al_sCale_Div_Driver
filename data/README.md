@@ -18,19 +18,33 @@ Contains data that are used for analysis
 ##### Environm_variab.csv 
 
 dataset
+
 plotID
+
 series
+
 subplot
+
 habitat_broad
+
 zonality
+
 BIO1
+
 BIO12
+
 BIO7
+
 BIO15
+
 grazing_intencity
+
 mowing
+
 cover_litter
+
 pH
+
 Corg_percent
 
 #### alpha_beta_gamma_community_variabl.csv
@@ -40,8 +54,11 @@ Combines all diversity measures and plant cover for each scale:
 - beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
 
 SR - species richness
+
 ENSPIE - evenness measure calculated as inverse Simpson using species cover
+
 cover - cumulative cover of plant community
+
 
 
 
