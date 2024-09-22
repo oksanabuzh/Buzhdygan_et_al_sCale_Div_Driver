@@ -178,3 +178,12 @@ beta_fig_100 <- ggplot(
 # Write diversity measures ------------------------------------------------
 
 write_csv(div, "data/alpha_beta_gamma.csv")
+
+
+div_corrected <- div %>% 
+  unite("plotID", c(series, subplot), sep="", remove=F) %>% 
+  # rename(series=plot_id, subplot=subplot_id) %>% 
+  filter(!(series%in%c("NFD21_44", "NFD21_46"))) 
+
+write_csv(div_corrected, "data/alpha_beta_gamma_diversity.csv")
+

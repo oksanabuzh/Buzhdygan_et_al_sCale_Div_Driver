@@ -13,7 +13,41 @@ library(patchwork)
 
 
 # data----
-alpha <-read_csv ("Data/alpha_GLM.csv") 
+
+# "data/alpha_beta_gamma_diversity.csv" combines all diversity measures
+# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots, thus "series" (i.e. 100m2 plots) should be random factor
+# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the alpha diversity)
+# beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
+## SR - species richness
+## ENSPIE - evenness measure calculated as inverse Simpson using species cover
+
+
+# "data/climate_PCA.csv" contains scores for the compound climate variable, 
+# derived from the PCA analysis in "1_prepare_data/ PCA_environment.R"
+
+# "data/headers.csv" contains all environmental data
+
+
+climate_PCA <- read.csv("data/climate_PCA.csv")
+
+header <- read_csv("data/headers.csv") %>% 
+  full_join(
+    read.csv("data/climate_PCA.csv"),
+            by = "series"
+    )
+
+str(header) 
+names (header)
+
+
+alpha <-read_csv("data/alpha_beta_gamma_diversity.csv") %>%
+  filter(type=="alpha")%>% 
+  unite("metric", c(type, scale, metric), sep="_") %>% 
+  pivot_wider(names_from = metric, values_from = value) %>% 
+  full_join(header, 
+            by=c("dataset", "plotID", "series", "subplot")
+            )
+                   
 str(alpha) 
 names (alpha)
 

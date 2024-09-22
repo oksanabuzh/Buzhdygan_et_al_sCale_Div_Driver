@@ -1,6 +1,8 @@
+# Purpuse: calculate correlations among predictors
+
 library(tidyverse)
 
-
+# data
 k.dat<-read.csv ("data/headers.csv", header=T)
 
 str(k.dat) 

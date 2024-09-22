@@ -1,7 +1,6 @@
 # Purpose: Analysis for beta diversity
 
 
-
 # libraries----
 library(tidyverse)
 library(car)
@@ -14,7 +13,47 @@ library(patchwork)
 
 
 # data----
-beta_gamma <-read_csv ("Data/beta_gamma_GLM.csv") 
+
+
+# "data/alpha_beta_gamma_diversity.csv" combines all diversity measures
+# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots, thus "series" (i.e. 100m2 plots) should be random factor
+# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the alpha diversity)
+# beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
+## SR - species richness
+## ENSPIE - evenness measure calculated as inverse Simpson using species cover
+
+
+# "data/climate_PCA.csv" contains scores for the compound climate variable, 
+# derived from the PCA analysis in "1_prepare_data/ PCA_environment.R"
+
+# "data/headers.csv" contains all environmental data
+
+climate_PCA <- read.csv("data/climate_PCA.csv")
+
+header <- read_csv("data/headers.csv") %>% 
+  full_join(
+    read.csv("data/climate_PCA.csv"),
+    by = "series"
+  )
+
+str(header) 
+names (header)
+
+
+header_mean <- header %>% 
+  select(c(series, eunis_group, zonality, habitat_broad, 
+           where(is.numeric))) %>% 
+  group_by(series, eunis_group, zonality, habitat_broad) %>% 
+  summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))  %>% 
+  ungroup()
+
+
+beta_gamma <-read_csv("data/alpha_beta_gamma_diversity.csv") %>% 
+  filter(type=="gamma" | type=="beta" )%>% 
+  unite("metric", c(type, scale, metric), sep="_") %>% 
+  pivot_wider(names_from = metric, values_from = value) %>% 
+  full_join(header_mean, by=c("dataset", "series") )
+
 str(beta_gamma) 
 names (beta_gamma)
 
