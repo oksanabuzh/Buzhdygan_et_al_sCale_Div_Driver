@@ -2,11 +2,11 @@
 
 ## About
 
-This repository contains all the code and datasets for the paper
+This repository contains all the code for the paper
 
 Buzhdygan et al. (2024) Scale-dependent effects of plant diversity drivers in grasslands (submitted to Ecology and Evolution)
 
-FOr any questions please ask Oksana Buzhdygan [email](mailto:oksana.buzh@fu-berlin.de).
+For any questions please ask Oksana Buzhdygan [email](mailto: oksana.buzh@fu-berlin.de).
 
 ### Repository structure
 
@@ -16,6 +16,5 @@ FOr any questions please ask Oksana Buzhdygan [email](mailto:oksana.buzh@fu-berl
 | Folder         | What's inside                                  |
 | -------------- | ---------------------------------------------- |
 | analysis       | Analysis scripts for PCA and mixed models      |
-| data           | Data that is used for analysis                 |
 | results        | Result outputs from the analysis               |
 |                |                                                |
