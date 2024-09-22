@@ -1,26 +1,38 @@
-# Buzhdygan_et_al_sCale_Div_Driver
+# Folder "data"
 
 ## About
 
-This repository contains all the code for the paper
+Contains data that are used for analysis 
 
-Buzhdygan et al. (2024) Scale-dependent effects of plant diversity drivers in grasslands,
-submitted to Ecology and Evolution
+#### Structure
 
-for the preprint on Authorea see [link](https://doi.org/10.22541/au.172534860.07243481/v1)
-DOI: 10.22541/au.172534860.07243481/v1
-
-
-For any questions please ask Oksana Buzhdygan [email](mailto:oksana.buzh@fu-berlin.de).
-
-### Repository structure
+| Document                               | What's inside                            |
+| -------------------------------------- |----------------------------------------- |
+| Environm_variab.csv                    | Environmental data                       |
+| alpha_beta_gamma_community_variabl.csv | Plant diversity and cover for each scale |
+| climate_PCA                            | scores from the /analysis/PCA_climate.R  |       
 
 
-#### Folder information
+#### Metadata
 
-| Folder         | What's inside                                  |
-| -------------- | ---------------------------------------------- |
-| analysis       | Analysis scripts for PCA and mixed models      |
-| data           | Data that are used for analysis                |
-| results        | Result outputs from the analysis               |
-|                |                                                |
+##### Environm_variab.csv 
+
+dataset
+plotID
+series
+subplot
+habitat_broad
+zonality
+BIO1
+BIO12
+BIO7
+BIO15
+grazing_intencity
+mowing
+cover_litter
+pH
+Corg_percent
+
+##### alpha_beta_gamma_community_variabl.csv
+
+##### climate_PCA
