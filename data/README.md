@@ -15,7 +15,7 @@ Contains data that are used for analysis
 
 ## Metadata
 
-### Environm_variab.csv 
+### - Environm_variab.csv 
 
 dataset
 
@@ -47,7 +47,7 @@ pH
 
 Corg_percent
 
-### alpha_beta_gamma_community_variabl.csv
+### - alpha_beta_gamma_community_variabl.csv
 Combines all diversity measures and plant cover for each scale:
 - alpha diversity and cover measures (SR, ENSPIE, and cover) include doubled 10 m2 plots
 - gamma diversity and cover measures (SR, ENSPIE, and cover) include 100 m2 plots (i.e. the sample size is half of what we have for the alpha diversity)
@@ -75,4 +75,4 @@ cover - cumulative cover of plant community
 |value	| numeric	| Value for the respective measure of plant community	| Value for the respective measure of plant community|
 
 
-### climate_PCA
+### - climate_PCA
