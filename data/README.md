@@ -15,39 +15,17 @@ Contains data that are used for analysis
 
 ## Metadata
 
-### - Environm_variab.csv 
+### -> Environm_variab.csv 
 
-dataset
+#### Variables:			
+|Short name	| type |	Long name	| Description |
+| ----------|------|------------| ------------|
+| dataset	  |numeric | Dataset ID	| Dataset ID, sampled by different teams and years |
+|series	| character	| Series ID	| 100 m2 plot that includes two 10 m2 plots that are nested within it |
+|subplot	| character	| Subplot 	| one of two corners (i.e. 10 m 2 plots) nested within the 100 m2 plot (called series): NW - north west corner; SE - south east corner |
+|plotID	| character	| PlotID	| Plot ID, combines information of both series and corner. It is a unique identification ID for the study plots|
 
-plotID
-
-series
-
-subplot
-
-habitat_broad
-
-zonality
-
-BIO1
-
-BIO12
-
-BIO7
-
-BIO15
-
-grazing_intencity
-
-mowing
-
-cover_litter
-
-pH
-
-Corg_percent
-
-### - alpha_beta_gamma_community_variabl.csv
+### -> alpha_beta_gamma_community_variabl.csv
 Combines all diversity measures and plant cover for each scale:
 - alpha diversity and cover measures (SR, ENSPIE, and cover) include doubled 10 m2 plots
 - gamma diversity and cover measures (SR, ENSPIE, and cover) include 100 m2 plots (i.e. the sample size is half of what we have for the alpha diversity)
@@ -58,9 +36,6 @@ SR - species richness
 ENSPIE - evenness measure calculated as inverse Simpson using species cover
 
 cover - cumulative cover of plant community
-
-
-
 
 #### Variables:			
 |Short name	| type |	Long name	| Description |
@@ -75,4 +50,4 @@ cover - cumulative cover of plant community
 |value	| numeric	| Value for the respective measure of plant community	| Value for the respective measure of plant community|
 
 
-### - climate_PCA
+### -> climate_PCA
