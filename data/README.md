@@ -25,7 +25,7 @@ This dataset contains all measured environmental data, that were used in the pap
 |series	| character	| Series ID	| 100 m2 plot that includes two 10 m2 plots that are nested within it |
 |subplot	| character	| Subplot 	| one of two corners (i.e. 10 m 2 plots) nested within the 100 m2 plot (called series): NW - north west corner; SE - south east corner |
 | plotID	| character	| PlotID	| Plot ID, combines information of both series and corner. It is a unique identification ID for the study plots|
-|habitat_broad	| 	character	| Grassland habitat type	Broad types of grassland habitats, distinguished based on EUNIS habitat type system |
+|habitat_broad	| 	character	| Grassland habitat type	| Broad types of grassland habitats, distinguished based on EUNIS habitat type system |
 |zonality	| 	character		| Zonality of vegetation		| Zonality:  zonal (natural) vegetation types, azonal (seminatural) grassland types |
 |BIO1		| numeric	| 	Mean annual temperature		| Mean annual temperature, extracted from the CHELSA climate database using plot coordinates |
 |BIO12	| 	numeric		| Mean annual precipitation		| Mean annual precipitation, extracted from the CHELSA climate database using plot coordinates |
