@@ -16,6 +16,7 @@ Contains data that are used for analysis
 ## Metadata
 
 ### -> Environm_variab.csv 
+This dataset contains all measured environmental data, that were used in the paper
 
 #### Variables:			
 |Short name	| type |	Long name	| Description |
@@ -23,7 +24,20 @@ Contains data that are used for analysis
 | dataset	  |numeric | Dataset ID	| Dataset ID, sampled by different teams and years |
 |series	| character	| Series ID	| 100 m2 plot that includes two 10 m2 plots that are nested within it |
 |subplot	| character	| Subplot 	| one of two corners (i.e. 10 m 2 plots) nested within the 100 m2 plot (called series): NW - north west corner; SE - south east corner |
-|plotID	| character	| PlotID	| Plot ID, combines information of both series and corner. It is a unique identification ID for the study plots|
+| plotID	| character	| PlotID	| Plot ID, combines information of both series and corner. It is a unique identification ID for the study plots|
+|habitat_broad	| 	character	Grassland habitat type	Broad types of grassland habitats, distinguised based on EUNIS habitat type system |
+|zonality	| 	character		| Zonality of vegetation		| Zonality:  zonal (natural) vegetation types, azonal (seminatural) grassland types |
+|BIO1		| numeric	| 	Mean annual temperature		| Mean annual temperature, extracted from the CHELSA climate database using plot coordinates |
+|BIO12	| 	numeric		| Mean annual precipitation		| Mean annual precipitation, extracted from the CHELSA climate database using plot coordinates |
+|BIO7	| 	numeric		| Temperature annual range		| Temperature annual range, calculated as the difference beetwing the maximum temperature of the warmest month and minimum temperature of the coldest month. It was extracted from the CHELSA climate database using plot coordinates |
+|BIO15	| 	numeric		| Precipitation seasonality	| 	Precipitation seasonality, calculated as the coefficient of variation in precipitation acros year, extracted from the CHELSA climate database using plot coordinates |
+|grazing_intencity	| 	numeric		| Grazing intensity 	| 	Visual estimation of grazing intensity, ranging from 0 - no grazing to 3 - high grazing intensity |
+|mowing		| character		| Presence of mowing		| Indication if there were recent evidences of mowing |
+|cover_litter	| 	numeric		| Cover litter (%) 	| Percentage cover of litter after virtually removing all vegetation |
+|pH	| 	numeric		|  soil pH		|  Soil pH level |
+|Corg_percent		| numeric		|  C total (%)		|  Soil content of organic carbon, % |
+
+
 
 ### -> alpha_beta_gamma_community_variabl.csv
 Combines all diversity measures and plant cover for each scale:
