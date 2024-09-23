@@ -18,9 +18,9 @@ For any questions please ask Oksana Buzhdygan [email](mailto:oksana.buzh@fu-berl
 
 #### Folder information
 
-| Folder         | What's inside                                  |
-| -------------- | ---------------------------------------------- |
+| Folder                     | What's inside                                  |
+| --------------             | ---------------------------------------------- |
 | [analysis](analysis)       | Analysis scripts for PCA and mixed models      |
-| [data](data)   | Data that are used for analysis                |
-| [results](results)       | Result outputs from the analysis               |
-|                |                                                |
+| [data](data)               | Data that are used for analysis                |
+| [results](results)         | Result outputs from the analysis               |
+|                            |                                                |
