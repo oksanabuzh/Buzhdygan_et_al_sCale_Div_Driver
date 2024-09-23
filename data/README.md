@@ -65,3 +65,4 @@ cover - cumulative cover of plant community
 
 
 ### -> climate_PCA
+Contains scores for the compound climate variable, derived from the [PCA analysis](analysis/PCA_climate.R)
