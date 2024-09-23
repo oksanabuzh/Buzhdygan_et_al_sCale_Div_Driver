@@ -25,12 +25,12 @@ This dataset contains all measured environmental data, that were used in the pap
 |series	| character	| Series ID	| 100 m2 plot that includes two 10 m2 plots that are nested within it |
 |subplot	| character	| Subplot 	| one of two corners (i.e. 10 m 2 plots) nested within the 100 m2 plot (called series): NW - north west corner; SE - south east corner |
 | plotID	| character	| PlotID	| Plot ID, combines information of both series and corner. It is a unique identification ID for the study plots|
-|habitat_broad	| 	character	Grassland habitat type	Broad types of grassland habitats, distinguised based on EUNIS habitat type system |
+|habitat_broad	| 	character	| Grassland habitat type	Broad types of grassland habitats, distinguished based on EUNIS habitat type system |
 |zonality	| 	character		| Zonality of vegetation		| Zonality:  zonal (natural) vegetation types, azonal (seminatural) grassland types |
 |BIO1		| numeric	| 	Mean annual temperature		| Mean annual temperature, extracted from the CHELSA climate database using plot coordinates |
 |BIO12	| 	numeric		| Mean annual precipitation		| Mean annual precipitation, extracted from the CHELSA climate database using plot coordinates |
-|BIO7	| 	numeric		| Temperature annual range		| Temperature annual range, calculated as the difference beetwing the maximum temperature of the warmest month and minimum temperature of the coldest month. It was extracted from the CHELSA climate database using plot coordinates |
-|BIO15	| 	numeric		| Precipitation seasonality	| 	Precipitation seasonality, calculated as the coefficient of variation in precipitation acros year, extracted from the CHELSA climate database using plot coordinates |
+|BIO7	| 	numeric		| Temperature annual range		| Temperature annual range, calculated as the difference between the maximum temperature of the warmest month and minimum temperature of the coldest month. It was extracted from the CHELSA climate database using plot coordinates |
+|BIO15	| 	numeric		| Precipitation seasonality	| 	Precipitation seasonality, calculated as the coefficient of variation in precipitation across year, extracted from the CHELSA climate database using plot coordinates |
 |grazing_intencity	| 	numeric		| Grazing intensity 	| 	Visual estimation of grazing intensity, ranging from 0 - no grazing to 3 - high grazing intensity |
 |mowing		| character		| Presence of mowing		| Indication if there were recent evidences of mowing |
 |cover_litter	| 	numeric		| Cover litter (%) 	| Percentage cover of litter after virtually removing all vegetation |
