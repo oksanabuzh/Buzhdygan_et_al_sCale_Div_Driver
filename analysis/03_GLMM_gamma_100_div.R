@@ -1,4 +1,4 @@
-# Purpose: Analysis for gamma diversity (i.e. on the 100 m^2 plots)
+# Purpose: Analysis for the 100 m^2 plots (gamma diversity)
 
 
 # libraries----
@@ -14,22 +14,27 @@ library(patchwork)
 
 # data----
 
-# "data/alpha_beta_gamma_diversity.csv" combines all diversity measures
-# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots, thus "series" (i.e. 100m2 plots) should be random factor
-# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the alpha diversity)
+# "data/alpha_beta_gamma_community_variabl.csv" combines all diversity measures and plant cover
+# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots, 
+## thus "series" (i.e. 100m2 plots), nested in dataset (separate vegetation survey campaign) 
+## are fitted as a random effect
+# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the 10m2 plots)
 # beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
+
 ## SR - species richness
 ## ENSPIE - evenness measure calculated as inverse Simpson using species cover
+## cover - is cumulative plant cover
 
 
 # "data/climate_PCA.csv" contains scores for the compound climate variable, 
 # derived from the PCA analysis in "1_prepare_data/ PCA_environment.R"
 
-# "data/headers.csv" contains all environmental data
+# "data/Environm_variabl.csv" contains all environmental data
+
 
 climate_PCA <- read.csv("data/climate_PCA.csv")
 
-header <- read_csv("data/headers.csv") %>% 
+header <- read_csv("data/Environm_variabl.csv") %>% 
   full_join(
     read.csv("data/climate_PCA.csv"),
     by = "series"
@@ -40,24 +45,27 @@ names (header)
 
 
 header_mean <- header %>% 
-  select(c(series, eunis_group, zonality, habitat_broad, 
+  select(c(series, zonality, habitat_broad, 
            where(is.numeric))) %>% 
-  group_by(series, eunis_group, zonality, habitat_broad) %>% 
+  group_by(series,  zonality, habitat_broad) %>% 
   summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))  %>% 
   ungroup()
 
 
-beta_gamma <-read_csv("data/alpha_beta_gamma_diversity.csv") %>% 
+# prepare subset of data for alpha scale (10-m2 plots)
+
+beta_gamma <-read_csv("data/alpha_beta_gamma_community_variabl.csv") %>% 
   filter(type=="gamma" | type=="beta" )%>% 
   unite("metric", c(type, scale, metric), sep="_") %>% 
   pivot_wider(names_from = metric, values_from = value) %>% 
-  full_join(header_mean, by=c("dataset", "series") )
+  full_join(header_mean, by=c("dataset", "series") )%>% 
+  mutate(dataset=factor(dataset))
 
 str(beta_gamma) 
 names (beta_gamma)
 
 # dataset is a separate vegetation survey campaign
-beta_gamma$dataset <- factor(beta_gamma$dataset)
+beta_gamma$dataset 
 
 # Remove NAs 
 
@@ -78,7 +86,7 @@ gamma_data <- beta_gamma %>%
   drop_na
 
 
-# (1) gamma SR -----
+# (1) Species Richness -----
 
 
 # Data Exploration----
@@ -190,11 +198,14 @@ r2glmm::r2beta(m_b,  partial = T, data=gamma_data)
 ranef(m_b) # not zeros
 hist(ranef(m_b)$`dataset`[,1])
 
-# Model selection ----
 
 Anova(m_b)
 summary(m_b)
 
+
+## Model 1: all predictors (except precipitation CV)----
+### Model selection ----
+# test quadratic effects of climate, soil C, pH, and litter 
 # poly(pca1_clima, 2) 
 # poly(pH, 2) is marginal
 
@@ -214,17 +225,18 @@ m1_2 <- glmer.nb (gamma_100_div ~
                     grazing_intencity + mowing + 
                     (1|dataset), data = gamma_data)
 
-# calculate AIC 
-tlist <- AIC(m1_1, m1_2)
-# tlist
-arrange(tlist, +AIC)
+
+# calculate and compare AIC 
+AIC(m1_1, m1_2) %>% 
+  arrange(+AIC) %>% 
+  mutate(delta_AIC=AIC-min(AIC))
 
 
 Anova(m1_1)
 # Anova(m1_2)
 
-## Add Prec_Varieb ----
-### Select model for the Prec_Varieb ----
+## Model 2: Add Prec_Varieb ----
+### Model selection ----
 m2_1 <- glmer.nb (gamma_100_div ~ 
                     poly(pca1_clima, 2) +
                     poly(Prec_Varieb, 2) +
@@ -243,13 +255,40 @@ m2_2 <- glmer.nb (gamma_100_div ~
                     grazing_intencity + mowing + 
                     (1|dataset), data = gamma_data)
 
-# calculate AIC 
-tlist2 <- AIC(m2_1, m2_2)
-# tlist
-arrange(tlist2, +AIC)
+
+# calculate and compare AIC 
+AIC(m2_1, m2_2) %>% 
+  arrange(+AIC) %>% 
+  mutate(delta_AIC=AIC-min(AIC))
 
 # Anova(m2_2)
 Anova(m2_1)
+
+## -> Additional analysis (requested by reviewer) -----
+# Comment "I am unsure if you can conclude that the precipitation variability 
+# effect is shown. Perhaps you just repeat the hump-shape pattern of the environmental gradient. 
+# Maybe you can compare if models, where you have both linear and quadratic terms of climate, 
+# differ from those where the quadratic term of climate is replaced by precipitation variability. 
+# If the latter model is better (e.g. AIC is smaller than two units), you have more support for this claim."
+
+m3_1 <- glmer.nb (gamma_100_div ~ 
+                    poly(pca1_clima, 2) +
+                    (1|dataset), data = gamma_data)
+
+
+m3_2 <- glmer.nb (gamma_100_div ~ 
+                          pca1_clima + Prec_Varieb +
+                          (1|dataset), data = gamma_data)
+
+# calculate and compare AIC 
+AIC(m3_1, m3_2) %>% 
+  arrange(+AIC) %>% 
+  mutate(delta_AIC=AIC-min(AIC))
+
+Anova(m3_1)
+Anova(m3_2)
+
+
 
 # Plots----
 #         saline    complex       dry       wet       mesic        fringe       alpine
@@ -412,7 +451,7 @@ Fig.gammaSR_clima +
 
 
 # combine with alpha
-
+# from "analysis/02_GLMM_alpha_10_div.R"
 Fig.alphaSR_clima + Fig.gammaSR_clima +
   Fig.alphaSR_precip.CV + Fig.gammaSR_precip.CV +
   Fig.alphaSR_soilC + Fig.gammaSR_soilC +
@@ -482,7 +521,7 @@ write.csv(coef(summary(m2_1)),  file = "results/summary_gamma_SR_2.csv")
 
 
 
-# (2) gamma ENSPIE -----
+# (2) ENSPIE -----
 
 
 # Data Exploration----
@@ -568,10 +607,11 @@ Anova(m_ENSPIE_b)
 plot_model(m_ENSPIE_b,type = "pred", terms="grazing_intencity", show.data=T,
            title = "", line.size=1) + aes(linetype="solid")
 
+# Model 1: all predictors (except precipitation CV)----
+# test quadratic effects of climate, soil C, pH, and litter 
 # Model selection ----
 
 Anova(m_ENSPIE_b)
-
 
 # poly(pca1_clima, 2) 
 # poly(pH, 2) is marginal
@@ -601,16 +641,18 @@ m1_3_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~
                       grazing_intencity + mowing +
                       (1|dataset),  data = gamma_data)
 
-# calculate AIC 
-tlist <- AIC(m1_1_ENSPIE, m1_2_ENSPIE, m1_3_ENSPIE)
-# tlist
-arrange(tlist, +AIC)
+# calculate and compare AIC 
+AIC(m1_1_ENSPIE, m1_2_ENSPIE, m1_3_ENSPIE) %>% 
+  arrange(+AIC) %>% 
+  mutate(delta_AIC=AIC-min(AIC))
 
 
 Anova(m1_3_ENSPIE)
 
-## Add Prec_Varieb ----
-### Select model for the Prec_Varieb ----
+
+# Model 2: Add Prec_Varieb ----
+
+### Model selection -----
 m2_1_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~ 
                       poly(pca1_clima, 2) +
                       poly(Prec_Varieb,2) +
@@ -632,13 +674,41 @@ m2_2_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~
 
 
 
-# calculate AIC 
-tlist2 <- AIC(m2_1_ENSPIE, m2_2_ENSPIE)
-# tlist
-arrange(tlist2, +AIC)
+# calculate and compare AIC 
+AIC(m2_1_ENSPIE, m2_2_ENSPIE) %>% 
+  arrange(+AIC) %>% 
+  mutate(delta_AIC=AIC-min(AIC))
+
 
 # Anova(m2_2)
 Anova(m2_1_ENSPIE)
+
+
+## -> Additional analysis (requested by reviewer) -----
+# Comment "I am unsure if you can conclude that the precipitation variability 
+# effect is shown. Perhaps you just repeat the hump-shape pattern of the environmental gradient. 
+# Maybe you can compare if models, where you have both linear and quadratic terms of climate, 
+# differ from those where the quadratic term of climate is replaced by precipitation variability. 
+# If the latter model is better (e.g. AIC is smaller than two units), you have more support for this claim."
+
+m3_1_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~ 
+                      poly(pca1_clima, 2) +
+                      (1|dataset),  data = gamma_data)
+
+m3_2_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~ 
+                      pca1_clima +
+                      Prec_Varieb +
+                      (1|dataset),  data = gamma_data)
+
+# calculate and compare AIC 
+AIC(m3_1_ENSPIE, m3_2_ENSPIE) %>% 
+  arrange(+AIC) %>% 
+  mutate(delta_AIC=AIC-min(AIC))
+
+Anova(m3_1_ENSPIE)
+Anova(m3_2_ENSPIE)
+
+
 
 # Plots----
 #         saline    complex       dry       wet       mesic        fringe       alpine

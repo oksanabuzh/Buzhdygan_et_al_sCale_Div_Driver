@@ -12,46 +12,19 @@ library(patchwork)
 
 
 # data----
-# "data/climate_PCA.csv" contains scores for the compound climate variable, 
-# derived from the PCA analysis in "1_prepare_data/ PCA_environment.R"
-
-# "data/Environm_variabl.csv" contains all environmental data
-
-
-climate_PCA <- read.csv("data/climate_PCA.csv")
-
-header <- read_csv("data/Environm_variabl.csv") %>% 
-  full_join(
-    read.csv("data/climate_PCA.csv"),
-    by = "series"
-  )
-
-str(header) 
-names (header)
-
-# prepare subset of data for alpha scale (10-m2 plots)
-
-alpha <-read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
-  filter(type=="alpha")%>% 
-  unite("metric", c(type, scale, metric), sep="_") %>% 
-  pivot_wider(names_from = metric, values_from = value) %>% 
-  full_join(header, 
-            by=c("dataset", "plotID", "series", "subplot")
-  ) %>% 
-  mutate(dataset=factor(dataset))
-
+## data alpha----
+alpha <-read_csv ("Data/alpha_GLM.csv") 
 str(alpha) 
 names (alpha)
-
 # dataset is a separate vegetation survey campaign
-alpha$dataset 
-
+alpha$dataset <- factor(alpha$dataset)
 
 # Remove NAs  
 alpha_data <- alpha %>% 
   dplyr::select(alpha_10_div, alpha_10_ENSPIE,  
                 pca1_clima, 
                 grazing_intencity, mowing, 
+                # cover_shrub_total,     inclination, 
                 cover_litter,
                 BIO7, BIO15,
                 pH, Corg_percent,
@@ -68,10 +41,11 @@ alpha_data <- alpha %>%
 str(alpha_data)
 
 # plot on a mean alpha per series to omit pseudoreplication of the plots:
-alpha_mean <- alpha_data %>% 
+alpha_mean <- read_csv ("results/Div_NMDS_BRAY_Jaccard_Dataset.csv") %>% 
   dplyr::select(alpha_10_div, alpha_10_ENSPIE,  
                 pca1_clima, 
                 grazing_intencity, mowing, 
+                # cover_shrub_total, inclination, 
                 cover_litter,
                 BIO7, BIO15,
                 pH, Corg_percent,
@@ -86,29 +60,14 @@ alpha_mean <- alpha_data %>%
 str(alpha_mean)
 
 ## data gamma----
-
-header_mean <- header %>% 
-  select(c(series, zonality, habitat_broad, 
-           where(is.numeric))) %>% 
-  group_by(series,  zonality, habitat_broad) %>% 
-  summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))  %>% 
-  ungroup()
-
-beta_gamma <-read_csv("data/alpha_beta_gamma_community_variabl.csv") %>% 
-  filter(type=="gamma" | type=="beta" )%>% 
-  unite("metric", c(type, scale, metric), sep="_") %>% 
-  pivot_wider(names_from = metric, values_from = value) %>% 
-  full_join(header_mean, by=c("dataset", "series") )%>% 
-  mutate(dataset=factor(dataset))
-
+beta_gamma <-read_csv ("Data/beta_gamma_GLM.csv") 
 str(beta_gamma) 
 names (beta_gamma)
 
 # dataset is a separate vegetation survey campaign
-beta_gamma$dataset 
+beta_gamma$dataset <- factor(beta_gamma$dataset)
 
 # Remove NAs 
-
 gamma_data <- beta_gamma %>% 
   dplyr::select(gamma_100_div, gamma_100_ENSPIE, 
                 pca1_clima, 
@@ -134,7 +93,7 @@ beta_data <- beta_gamma %>%
                 cover_litter,
                 BIO7, BIO15,
                 pH, Corg_percent,
-                dataset, series, habitat_broad, zonality) %>% 
+                dataset, series, habitat_broad) %>% 
   mutate(Tem_range = BIO7,
          Prec_Varieb = BIO15,
          mowing=factor(mowing)) %>% 
@@ -148,57 +107,51 @@ str(beta_data)
 
 
 # alpha SR ----
-m1_3 <- glmer (alpha_10_div ~ 
-                 poly(pca1_clima, 2) +
-                 poly(Corg_percent,2)+
-                 pH +
-                 poly(cover_litter,2) +
-                 grazing_intencity + mowing +
-                 (1|dataset/series), family = "poisson", data = alpha_data)
+m1_1 <- lmer (sqrt(alpha_10_div) ~ 
+                poly(pca1_clima, 2) +
+                poly(Corg_percent,2)+
+                poly(pH, 2) +
+                poly(cover_litter,2) +
+                grazing_intencity + mowing +
+                (1|dataset), data = alpha_mean)
 
-m1_1 <- glmer (alpha_10_div ~ 
-                 poly(pca1_clima, 2) +
-                 poly(Corg_percent,2)+
-                 poly(pH,2) +
-                 poly(cover_litter,2) +
-                 grazing_intencity + mowing +
-                 (1|dataset/series), family = "poisson", data = alpha_data)
 
-m2_1 <- glmer (alpha_10_div ~ 
-                 poly(pca1_clima, 2) +
-                 poly(Prec_Varieb, 2) +
-                 poly(Corg_percent,2)+
-                 pH +
-                 poly(cover_litter,2) +
-                 grazing_intencity + mowing +
-                 (1|dataset/series), family = "poisson", data = alpha_data)
+
+m2_1 <- lmer (sqrt(alpha_10_div) ~ 
+                poly(pca1_clima, 2) +
+                poly(Prec_Varieb, 2) +
+                poly(Corg_percent,2)+
+                poly(pH, 2) +
+                poly(cover_litter,2) +
+                grazing_intencity + mowing +
+                (1|dataset), data = alpha_mean)
 
 ## Predictions----
-clima_pred_10m <-get_model_data(m1_3,type = "pred", terms="pca1_clima[-1.2:4.8, by=.001]")
-Humus_pred_10m <-get_model_data(m1_3,type = "pred", terms="Corg_percent[0:9.5, by=.001]")
-Litter_pred_10m <-get_model_data(m1_3,type = "pred", terms="cover_litter[0:100, by=0.01]")
+clima_pred_10m <-get_model_data(m1_1,type = "pred", terms="pca1_clima[-1.2:4.8, by=.001]")
+Humus_pred_10m <-get_model_data(m1_1,type = "pred", terms="Corg_percent[0:9.5, by=.001]")
+Litter_pred_10m <-get_model_data(m1_1,type = "pred", terms="cover_litter[0:100, by=0.01]")
 pH_pred_10m <-get_model_data(m1_1,type = "pred", terms="pH[3.8:9, by=.001]")
-grazing_pred_10m <-get_model_data(m1_3,type = "pred", terms="grazing_intencity[-0.2:3.2, by=0.01]")
+grazing_pred_10m <-get_model_data(m1_1,type = "pred", terms="grazing_intencity[-0.2:3.2, by=0.01]")
 precipCV_pred_10m <-get_model_data(m2_1,type = "pred", terms="Prec_Varieb")
 
 
 # alpha ENSPIE----
-m1_1_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~ 
+m1_1_ENSPIE <- lmer(sqrt(alpha_10_ENSPIE) ~ 
                       poly(pca1_clima, 2) +
                       pH +
                       Corg_percent +
                       poly(cover_litter,2) +
                       grazing_intencity + mowing +
-                      (1|dataset/series),  data = alpha_data)
+                      (1|dataset),  data = alpha_mean)
 
-m2_1_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~ 
+m2_1_ENSPIE <- lmer(sqrt(alpha_10_ENSPIE) ~ 
                       poly(pca1_clima, 2) +
                       poly(Prec_Varieb, 2) +
                       pH +
                       Corg_percent +
                       poly(cover_litter,2) +
                       grazing_intencity + mowing +
-                      (1|dataset/series),  data = alpha_data)
+                      (1|dataset),  data = alpha_mean)
 
 ## Predictions----
 
@@ -397,7 +350,7 @@ Fig_pH_10_100  <- ggplot(pH_pred_10m, aes(x, predicted)) +
              pch=21)+
   scale_fill_manual(values = col)+  scale_color_manual(values = col) +
   labs(y="Species richness", x='Soil pH')+
-  geom_line(linetype=5, size=0.5, col="#50A0C8") +
+  geom_line(linetype=1, size=1, col="#50A0C8") +
   geom_line(data=pH_pred_100m, linetype=1, size=0.5, col="#D6604D") 
 
 
@@ -487,7 +440,7 @@ Fig_Litter_10_100_ENSPIE  <- ggplot(Litter_pred_10m_Ensp, aes(x, predicted)) +
              pch=21)+
   scale_fill_manual(values = col)+  scale_color_manual(values = col) +
   labs(y=expression(paste("ENS"[PIE])), x='Litter cover')+
-  geom_line(linetype=1, size=0.5, col="#50A0C8") +
+  geom_line(linetype=1, size=1, col="#50A0C8") +
   geom_line(data=Litter_pred_100m_Ensp, linetype=1, size=1, col="#D6604D") 
 
 
@@ -523,7 +476,7 @@ Fig_grazing_10_100_ENSPIE  <- ggplot(grazing_pred_10m_Ensp, aes(x, predicted)) +
              pch=21, position=position_jitter(w=0.2))+
   scale_fill_manual(values = col) +  scale_color_manual(values = col) +
   labs(y=expression(paste("ENS"[PIE])), x='Grazing intencity')+
-  geom_line(linetype=5, size=0.5, col="#50A0C8") +
+  geom_line(linetype=1, size=1, col="#50A0C8") +
   geom_line(data=grazing_pred_100m_Ensp, linetype=1, size=0.5, col="#D6604D") 
 
 

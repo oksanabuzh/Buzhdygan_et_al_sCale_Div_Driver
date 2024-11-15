@@ -11,6 +11,8 @@
 
 dev.off()
 
+#
+library(tidyverse)
 
 # data----
 alpha <-read_csv ("Data/alpha_GLM.csv") 

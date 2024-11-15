@@ -9,7 +9,33 @@ library(performance)
 # data----
 ## data-gamma----
 
-beta_gamma <-read_csv ("Data/beta_gamma_GLM.csv") 
+
+climate_PCA <- read.csv("data/climate_PCA.csv")
+
+header <- read_csv("data/Environm_variabl.csv") %>% 
+  full_join(
+    read.csv("data/climate_PCA.csv"),
+    by = "series"
+  )
+
+str(header) 
+names (header)
+
+
+header_mean <- header %>% 
+  select(c(series,zonality, habitat_broad, 
+           where(is.numeric))) %>% 
+  group_by(series, zonality, habitat_broad) %>% 
+  summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))  %>% 
+  ungroup()
+
+
+beta_gamma <-read_csv("data/alpha_beta_gamma_community_variabl.csv") %>% 
+  filter(type=="gamma" | type=="beta" )%>% 
+  unite("metric", c(type, scale, metric), sep="_") %>% 
+  pivot_wider(names_from = metric, values_from = value) %>% 
+  full_join(header_mean, by=c("dataset", "series") )
+
 str(beta_gamma) 
 names (beta_gamma)
 
@@ -42,7 +68,13 @@ str(gamma_data)
 
 
 ## data-alpha----
-alpha <-read_csv ("Data/alpha_GLM.csv") 
+alpha <-read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
+  filter(type=="alpha")%>% 
+  unite("metric", c(type, scale, metric), sep="_") %>% 
+  pivot_wider(names_from = metric, values_from = value) %>% 
+  full_join(header, 
+            by=c("dataset", "plotID", "series", "subplot")
+  )
 str(alpha) 
 names (alpha)
 
@@ -93,13 +125,6 @@ alpha_gamma <- a %>%
 str(alpha_gamma)
 
 # data-beta ----
-
-beta_gamma <-read_csv ("Data/beta_gamma_GLM.csv") 
-str(beta_gamma) 
-names (beta_gamma)
-
-# dataset is a separate vegetation survey campaign
-beta_gamma$dataset <- factor(beta_gamma$dataset)
 
 # Remove NAs 
 
@@ -164,7 +189,7 @@ ggplot(gamma_data, aes(habitat, gamma_100_div, group_by=zonality, color=habitat)
   #  stat_boxplot(geom ='errorbar', width = 0.5) +
   scale_fill_manual(values = col)+  scale_color_manual(values = col) +   
   scale_shape_manual(values= c(21, 17))+
-  labs(y="Species richness at 100 m2", x='Grassland habitat type', 
+  labs(y=expression(paste("Species richness at 100-", m^2, "plots")), x='Grassland habitat type', 
        color="Habitat", shape="Zonality ")+
   theme_bw()
 

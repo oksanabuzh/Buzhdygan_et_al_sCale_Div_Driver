@@ -174,11 +174,12 @@ SR + ENSPIE +
 
 
 
+
 # Fig. 4 -----
 ggplot(Mismatch %>% 
          mutate(Measure= dplyr::recode(Measure,  
                                       SR="Species richness",
-                                      ENSPIE="ENSPIE")), 
+                                      ENSPIE="Evenness")), 
                 aes(x = alpha, y = gamma, 
                      color = Driver, shape=Measure)) + 
   # fill=dummy_fill, shape=AG_BG_stock)) +
@@ -189,7 +190,8 @@ ggplot(Mismatch %>%
   # scale_fill_manual(values=myPalette_with_white)+
   # facet_wrap( ~  in_out_flux, scales = "free") +
   theme_bw() +  # guides(fill = "none") +
-  labs(x="Effect size at alpha scale", y= "Effect size at gamma scale",
+  labs(x=expression(paste("Effect size at 10-", m^2, "plots")),
+       y=expression(paste("Effect size at 100-", m^2, "plots")),
        shape="Diversity measure", 
        col="Driver")
 
