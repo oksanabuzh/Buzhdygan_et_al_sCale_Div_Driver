@@ -195,6 +195,22 @@ ggplot(gamma_data, aes(habitat, gamma_100_div, group_by=zonality, color=habitat)
 
 
 
+
+#Fg. S7b 
+
+ggplot(beta_data, aes(habitat, beta_100_div, color=habitat))+
+  geom_point(aes( col=habitat),
+             size=2, alpha=0.9,
+             position=position_jitterdodge(jitter.width = 1.4, 
+                                           jitter.height = 0)) +
+  geom_boxplot(alpha=0, lwd=0.6, outlier.shape = NA)+
+  stat_boxplot(geom ='errorbar', width = 0.5) +
+  scale_fill_manual(values = col)+  scale_color_manual(values = col) +   
+
+  labs(y="", x='Grassland habitat type', 
+       color="Habitat")+
+  theme_bw()
+
 ## Plot SR for each scale ----
 # Fig. S3 a ----
 ggplot(alpha_gamma, aes(scale,SR, color=scale))+
