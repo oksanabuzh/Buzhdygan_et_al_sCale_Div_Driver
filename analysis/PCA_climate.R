@@ -8,8 +8,8 @@ header_data <- read_csv("data/headers.csv")
 # Climate -----------------------------------------------------------------
 
 climate <- header_data %>%
-  group_by(series) %>% 
-  summarise(BIO1=mean(BIO1), BIO12=mean(BIO12)) %>% 
+  group_by(series) %>%
+  summarise(BIO1 = mean(BIO1), BIO12 = mean(BIO12)) %>%
   mutate(
     Temprt = as.vector(scale(BIO1, scale = TRUE)),
     Precipt = as.vector(scale(BIO12, scale = TRUE))
@@ -27,11 +27,11 @@ climate_pca
 summary(climate_pca)
 
 fviz_eig(climate_pca
-         , addlabels = TRUE
-         )
+  , addlabels = TRUE
+)
 
 fviz_pca_var(climate_pca,
- # axes = c(1, 2),
+  # axes = c(1, 2),
   col.var = "contrib", # Color by contributions to the PC
   gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
   repel = TRUE # Avoid text overlapping
@@ -60,13 +60,13 @@ head(climate_pca_var$cor)
 
 
 library("corrplot")
-corrplot(climate_pca_var$cor, is.corr=F) 
+corrplot(climate_pca_var$cor, is.corr = F)
 
 library(ggcorrplot)
 ggcorrplot(climate_pca_var$contrib,
-           hc.order = TRUE, type = "lower",
-           lab = TRUE, lab_size = 3,
-           colors = c("red", "white", "blue")
+  hc.order = TRUE, type = "lower",
+  lab = TRUE, lab_size = 3,
+  colors = c("red", "white", "blue")
 )
 
 climate_pca_var$cor
@@ -105,17 +105,17 @@ summary(soil_text_pca)
 fviz_eig(soil_text_pca)
 
 fviz_pca_var(soil_text_pca,
-             axes = c(1, 2),
-             # col.var = "cor", # Color by contributions to the PC
-             # gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE # Avoid text overlapping
+  axes = c(1, 2),
+  # col.var = "cor", # Color by contributions to the PC
+  # gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+  repel = TRUE # Avoid text overlapping
 )
 
 fviz_pca_var(soil_text_pca,
-             axes = c(2, 1),
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#00AFBB", "yellow", "red", "blue"),
-             repel = TRUE # Avoid text overlapping
+  axes = c(2, 1),
+  col.var = "contrib", # Color by contributions to the PC
+  gradient.cols = c("#00AFBB", "yellow", "red", "blue"),
+  repel = TRUE # Avoid text overlapping
 )
 
 soil_text_var <- get_pca_var(soil_text_pca)
@@ -131,33 +131,33 @@ head(soil_text_var$cor)
 
 
 library("corrplot")
-corrplot(soil_text_var$cor, is.corr=F) 
-corrplot(soil_text_var$contrib, is.corr=F)
+corrplot(soil_text_var$cor, is.corr = F)
+corrplot(soil_text_var$contrib, is.corr = F)
 
 col <- colorRampPalette(c("#00AFBB", "#E7B800", "#FC4E07"))
 
-corrplot(soil_text_var$contrib, is.corr=F,  method="color", 
-         col=col(6),  
-         # type="lower", # order="hclust", 
-         addCoef.col = "black", number.cex = 0.7, # Add coefficient of correlation
-         tl.col="black", tl.srt=45 #, #Text label color and rotation
-         # Combine with significance
-         # p.mat = p.mat, sig.level = 0.01, insig = "blank", 
-         # hide correlation coefficient on the principal diagonal
-         #  diag=FALSE 
+corrplot(soil_text_var$contrib, is.corr = F, method = "color",
+  col = col(6),
+  # type="lower", # order="hclust",
+  addCoef.col = "black", number.cex = 0.7, # Add coefficient of correlation
+  tl.col = "black", tl.srt = 45 # , #Text label color and rotation
+  # Combine with significance
+  # p.mat = p.mat, sig.level = 0.01, insig = "blank",
+  # hide correlation coefficient on the principal diagonal
+  #  diag=FALSE
 )
 
 col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
 
-corrplot(soil_text_var$cor, is.corr=F,  method="color", 
-         col=col(200),  
-         #type="lower", # order="hclust", 
-         addCoef.col = "black", number.cex = 0.7, # Add coefficient of correlation
-         tl.col="black", tl.srt=45 #, #Text label color and rotation
-         # Combine with significance
-         # p.mat = p.mat, sig.level = 0.01, insig = "blank", 
-         # hide correlation coefficient on the principal diagonal
-         #  diag=FALSE 
+corrplot(soil_text_var$cor, is.corr = F, method = "color",
+  col = col(200),
+  # type="lower", # order="hclust",
+  addCoef.col = "black", number.cex = 0.7, # Add coefficient of correlation
+  tl.col = "black", tl.srt = 45 # , #Text label color and rotation
+  # Combine with significance
+  # p.mat = p.mat, sig.level = 0.01, insig = "blank",
+  # hide correlation coefficient on the principal diagonal
+  #  diag=FALSE
 )
 
 
@@ -165,17 +165,17 @@ soil_text_var$cor
 
 library(ggcorrplot)
 ggcorrplot(soil_text_var$contrib,
-           # hc.order = TRUE, 
-           type = "lower",
-           lab = TRUE, lab_size = 3)
+  # hc.order = TRUE,
+  type = "lower",
+  lab = TRUE, lab_size = 3)
 
 # Extract the PC axis coordinates and bind them to the dataset
 pca1_soil_text <- soil_text_ind$coord[, 1]
 pca2_soil_text <- soil_text_ind$coord[, 2]
 
 soil_text <- bind_cols(soil_text,
-                       pca1_soil_text = pca1_soil_text,
-                       pca2_soil_text = pca2_soil_text
+  pca1_soil_text = pca1_soil_text,
+  pca2_soil_text = pca2_soil_text
 )
 
 
@@ -183,10 +183,10 @@ soil_text <- bind_cols(soil_text,
 
 # Combine all PCAs --------------------------------------------------------
 
-headers_PCA <- full_join(header_data, climate, by = "series") 
+headers_PCA <- full_join(header_data, climate, by = "series")
 headers_PCA
 
-PCA_all<- headers_PCA %>%
+PCA_all <- headers_PCA %>%
   select(pca1_soil_text, pca2_soil_text, pca1_clima)
 
 corl1 <- round(cor(PCA_all,
