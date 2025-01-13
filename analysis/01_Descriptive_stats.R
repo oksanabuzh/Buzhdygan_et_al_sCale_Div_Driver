@@ -5,13 +5,23 @@ library(sjPlot)
 library(lme4)
 library(performance)
 
+# Define habitat colors to be used in all plots to distinguish habitats
+# define habitat colors
+habitat_colors = c(
+  saline = "#4e3910",
+  complex = "#CC6600",
+  dry = "#e3c28b",
+  wet = "#CC99FF",
+  mesic = "#0066FF",
+  fringe = "#00B200",
+  alpine = "#006600")
 
-# data----
-## data-gamma----
+# Read and prepare data -------------------------------------------------------
 
-
+# Read climate PCA data
 climate_PCA <- read.csv("data/climate_PCA.csv")
 
+# Read header data with environmental variables for each series and subplot
 header <- read_csv("data/Environm_variabl.csv") %>%
   full_join(
     read.csv("data/climate_PCA.csv"),
@@ -21,7 +31,7 @@ header <- read_csv("data/Environm_variabl.csv") %>%
 str(header)
 names(header)
 
-
+# Calculate mean values for 2 corners for each series
 header_mean <- header %>%
   select(c(series, zonality, habitat_broad,
     where(is.numeric))) %>%
@@ -29,7 +39,11 @@ header_mean <- header %>%
   summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) %>%
   ungroup()
 
+# Species richness and ENSPIE data for alpha and gamma scale -------------------
 
+# Prepare data for gamma scale ------------------------------------------------
+
+# Beta and gamma diversity  
 beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   filter(type == "gamma" | type == "beta") %>%
   unite("metric", c(type, scale, metric), sep = "_") %>%
@@ -37,18 +51,15 @@ beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   full_join(header_mean, by = c("dataset", "series"))
 
 str(beta_gamma)
-names(beta_gamma)
 
 # dataset is a separate vegetation survey campaign
 beta_gamma$dataset <- factor(beta_gamma$dataset)
 
-# Remove NAs
-
+# Remove NAs and select only needed columns for gamma scale (100 m²)
 gamma_data <- beta_gamma %>%
   dplyr::select(gamma_100_div, gamma_100_ENSPIE,
     pca1_clima,
     grazing_intencity, mowing,
-    # cover_shrub_total,     inclination,
     cover_litter,
     BIO7, BIO15, BIO1, BIO12,
     pH, Corg_percent,
@@ -60,14 +71,11 @@ gamma_data <- beta_gamma %>%
     mowing = factor(mowing)) %>%
   mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
     "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na
-
-
+  drop_na()
 
 str(gamma_data)
 
-
-## data-alpha----
+# Prepare data for alpha scale ------------------------------------------------
 alpha <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   filter(type == "alpha") %>%
   unite("metric", c(type, scale, metric), sep = "_") %>%
@@ -81,13 +89,11 @@ names(alpha)
 # dataset is a separate vegetation survey campaign
 alpha$dataset <- factor(alpha$dataset)
 
-
 # Remove NAs
 alpha_data <- alpha %>%
   dplyr::select(alpha_10_div, alpha_10_ENSPIE,
     pca1_clima,
     grazing_intencity, mowing,
-    # cover_shrub_total,     inclination,
     cover_litter,
     BIO7, BIO15,
     pH, Corg_percent,
@@ -98,35 +104,28 @@ alpha_data <- alpha %>%
     mowing = factor(mowing)) %>%
   mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
     "wet", "mesic", "fringe", "alpine"))) %>%
-
-  drop_na
-
-
-## Merge alpha & gamma ----
+  drop_na()
 
 str(alpha_data)
 
+# Merge alpha & gamma ---------------------------------------------------------
+
 a <- alpha_data %>%
-  # pivot_longer(c("alpha_10_div", "alpha_10_ENSPIE"), names_to = "Diver") %>%
   mutate(scale = "alpha", SR = alpha_10_div, ENSPIE = alpha_10_ENSPIE) %>%
   select(scale, SR, ENSPIE, habitat)
 
-str(gamma_data)
-
 g <- gamma_data %>%
-  # pivot_longer(c("alpha_10_div", "alpha_10_ENSPIE"), names_to = "Diver") %>%
   mutate(scale = "gamma", SR = gamma_100_div, ENSPIE = gamma_100_ENSPIE) %>%
   select(scale, SR, ENSPIE, habitat)
 
-alpha_gamma <- a %>%
-  bind_rows(g)
-
+alpha_gamma <- bind_rows(a, g)
 
 str(alpha_gamma)
 
-# data-beta ----
 
-# Remove NAs
+# Prepare data for beta scale ------------------------------------------------
+
+# Remove NAs and select only needed columns for beta scale
 
 beta_data <- beta_gamma %>%
   dplyr::select(beta_100_div, beta_100_ENSPIE,
@@ -146,40 +145,32 @@ beta_data <- beta_gamma %>%
 
 str(beta_data)
 
+# Calculate descriptive statistics -------------------------------------------
 
+# Percentage of Zonal vs azonal habitats ------------------------------------
 
-
-# Descriptive statistics----
-
-## % of zonal vs azonal----
 gamma_data %>%
   count(zonality) %>%
   mutate(pr = n / sum(n) * 100)
 
-## Plot SR for each scale and habitata ----
-# Fig. 1 b -----
+# Figure 1 b: Species richness for each scale and habitat type ---------------
 
-#         saline    complex       dry       wet       mesic        fringe       alpine
-col = c("#4e3910", "#CC6600", "#e3c28b", "#CC99FF", "#0066FF", "#00B200", "#006600")
-
+# alpha and gamma scale
 ggplot(alpha_gamma, aes(habitat, SR, group_by = scale, color = habitat)) +
   geom_point(aes(shape = scale, col = habitat),
     size = 2, alpha = 0.9,
     position = position_jitterdodge(jitter.width = 0.9,
       jitter.height = 0)) +
   geom_boxplot(alpha = 0, lwd = 0.6, outlier.shape = NA) +
-  #  stat_boxplot(geom ='errorbar', width = 0.5) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   scale_shape_manual(values = c(21, 19)) +
   labs(y = "Species richness", x = 'Grassland habitat type',
     color = "Habitat", shape = "Scale") +
   theme_bw()
 
-# Zonal/Azonal
+# Fig. S7 ---------------------------------------------------------------------
 
-# Fig. S7 ----
-
-
+# only gamma diversity
 ggplot(gamma_data, aes(habitat, gamma_100_div, group_by = zonality, color = habitat)) +
   geom_point(aes(shape = zonality, col = habitat),
     size = 2, alpha = 0.9,
@@ -187,17 +178,15 @@ ggplot(gamma_data, aes(habitat, gamma_100_div, group_by = zonality, color = habi
       jitter.height = 0)) +
   # geom_boxplot(alpha=0, lwd=0.6, outlier.shape = NA)+
   #  stat_boxplot(geom ='errorbar', width = 0.5) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   scale_shape_manual(values = c(21, 17)) +
-  labs(y = expression(paste("Species richness at 100-", m^2, "plots")), x = 'Grassland habitat type',
+  labs(y = expression(paste("Species richness at 100-", m^2, "plots")), 
+       x = 'Grassland habitat type',
     color = "Habitat", shape = "Zonality ") +
   theme_bw()
 
-
-
-
 # Fg. S7b
-
+# only beta diversity
 ggplot(beta_data, aes(habitat, beta_100_div, color = habitat)) +
   geom_point(aes(col = habitat),
     size = 2, alpha = 0.9,
@@ -205,14 +194,13 @@ ggplot(beta_data, aes(habitat, beta_100_div, color = habitat)) +
       jitter.height = 0)) +
   geom_boxplot(alpha = 0, lwd = 0.6, outlier.shape = NA) +
   stat_boxplot(geom = 'errorbar', width = 0.5) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
-
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "", x = 'Grassland habitat type',
     color = "Habitat") +
   theme_bw()
 
-## Plot SR for each scale ----
-# Fig. S3 a ----
+# Species richness plots for each scale (Fig. S3 a) --------------------------
+# SR alpha and gamma scale
 ggplot(alpha_gamma, aes(scale, SR, color = scale)) +
   geom_point(aes(fill = scale), col = "black",
     size = 2, alpha = 0.7, pch = 21,
@@ -227,8 +215,7 @@ ggplot(alpha_gamma, aes(scale, SR, color = scale)) +
     color = "Scale", fill = "Scale") +
   theme_bw()
 
-## Plot ENSPIE for each scale ----
-# Fig. S3 b ----
+# ENSPIE plots for each scale (Fig. S3 b) ------------------------------------
 ggplot(alpha_gamma, aes(scale, ENSPIE, color = scale)) +
   geom_point(aes(fill = scale), col = "black",
     size = 2, alpha = 0.7, pch = 21,
@@ -243,9 +230,9 @@ ggplot(alpha_gamma, aes(scale, ENSPIE, color = scale)) +
     color = "Scale", fill = "Scale") +
   theme_bw()
 
-# plot model R2 for each scale
+# Plot R2 models  for each scale ----------------------------------------------
 
-# Fig. S3 c ----
+# Read all R2 results and combine them in one table --------------------------
 R2_alpha_SR <- read_csv("results/partial_R2_M2_alpha_SR.csv") %>%
   filter(Effect == "Model") %>%
   mutate(scale = "alpha", measure = "SR") %>%
@@ -273,6 +260,8 @@ model_R2_all <- R2_alpha_SR %>%
 
 model_R2_all
 
+# Plot R2 for SR models (Fig. S3 c) ----------------------------------------
+
 ggplot(model_R2_all %>% filter(measure == "SR"),
   aes(y = Rsq, x = scale, fill = scale), col = "black") +
   geom_bar(stat = "identity", position = position_dodge(), col = "black") +
@@ -284,8 +273,7 @@ ggplot(model_R2_all %>% filter(measure == "SR"),
   labs(x = 'Scale', fill = "Scale") +
   theme_bw()
 
-# for ENSPIE
-# Fig. S3 d ----
+# Plot R2 for ENSPIE models (Fig. S3 d) ------------------------------------
 
 ggplot(model_R2_all %>% filter(measure == "ENSPIE"),
   aes(y = Rsq, x = scale, fill = scale), col = "black") +
@@ -299,33 +287,26 @@ ggplot(model_R2_all %>% filter(measure == "ENSPIE"),
   theme_bw()
 
 
-# Climate variables----
-## Correlation among Temperature and precipitation ----
+# Climate variables ------------------------------------------------------
 
+# Correlation among Temperature and precipitation --------------------------
 m1 <- lm(log(Precipt) ~ Temprt, data = gamma_data)
 
-# check model
+# check model assumptions
 par(mfrow = c(2, 2))
 plot(m1)
 par(mfrow = c(1, 1))
 
-Anova(m1)
+car::Anova(m1)
 summary(m1)
 gamma_data$Temprt
 
-
-
-#         saline    complex       dry       wet       mesic        fringe       alpine
-col = c("#4e3910", "#CC6600", "#e3c28b", "#CC99FF", "#0066FF", "#00B200", "#006600")
-
+# Set a theme for all following plots
 set_theme(base = theme_bw(), axis.textsize.x = 1, axis.textsize.y = 1, axis.textcolor = "black",
   axis.title.color = "black", axis.title.size = 1.4, legend.pos = "None", geom.linetype = 2)
 
-
-
 plot_model(m1, type = "pred", terms = "Temprt", # show.data=F,
   title = "", line.size = 0.5) + aes(linetype = "solid")
-
 
 Temp <- get_model_data(m1, type = "pred", terms = "Temprt")
 Temp
@@ -335,60 +316,55 @@ clima_pred_10m$predicted
 clima_pred_10m$conf.low
 clima_pred_10m$conf.high
 
-# Fig. S1 a -----
+# Fig. S1 a --------------------------------------------------------------------
 
-Fig.Temp <- ggplot(Temp, aes(x, predicted)) +
+fig_temp <- ggplot(Temp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = gamma_data, aes(Temprt, Precipt, fill = habitat, col = habitat),
     size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Precipitation, mm", x = 'Temperature') +
   xlim(0, 118) +
   geom_line(linetype = 1, linewidth = 1, col = "black")
 
-Fig.Temp
+fig_temp
 
-
-
-## Prec_Varieb - pca1_clima ----
+# Correlation among precipitation variability and climate PC -------------------
 
 min(gamma_data$pca1_clima)
-# Precipitation variability
 
+# Precipitation variability
 m2 <- lm(Prec_Varieb ~ poly(pca1_clima, 2), data = gamma_data)
 
-# check model
-
+# check model assumptions
 par(mfrow = c(2, 2))
 plot(m2)
 par(mfrow = c(1, 1))
 
-Anova(m2)
+car::Anova(m2)
 summary(m2)
-
 
 Prec_Var <- get_model_data(m2, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]")
 Prec_Var
 
-# Fig. S1 b -----
+# Fig. S1 b ------------------------------------------------------------------
 
-Fig.Prec_Var <- ggplot(Prec_Var, aes(x, predicted)) +
+fig_prec_var <- ggplot(Prec_Var, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = gamma_data, aes(pca1_clima, Prec_Varieb, fill = habitat, col = habitat),
     size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Precipitation variability", x = "Climate gradient (PC))") +
   geom_line(linetype = 1, linewidth = 1, col = "black")
 
-Fig.Prec_Var
+fig_prec_var
 
 
-# soil pH ----
+# Corrlation among soil pH and climate PC -------------------------------------
 
 m3 <- lm(log(pH) ~ pca1_clima, data = gamma_data)
 
-# check model
-
+# check model assumptions
 par(mfrow = c(2, 2))
 plot(m3)
 par(mfrow = c(1, 1))
@@ -396,30 +372,28 @@ par(mfrow = c(1, 1))
 Anova(m3)
 summary(m3)
 
-
 ph <- get_model_data(m3, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]")
 ph
 
-# Fig. S2 a ----
+# Fig. S2 a -------------------------------------------------------------------
 
-Fig.ph <- ggplot(ph, aes(x, predicted)) +
+fig_ph <- ggplot(ph, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = gamma_data, aes(pca1_clima, pH, fill = habitat, col = habitat),
     size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Soil pH", x = "Climate gradient (PC)") +
   geom_line(linetype = 1, linewidth = 1, col = "black")
 
-Fig.ph
+fig_ph
 
 
 
-# soil C ----
+# Correlation among soil C and climate PC -------------------------------------
 
 m4 <- lm(log(Corg_percent) ~ poly(pca1_clima, 2), data = gamma_data)
 
-# check model
-
+# check model assumptions
 par(mfrow = c(2, 2))
 plot(m4)
 par(mfrow = c(1, 1))
@@ -431,28 +405,25 @@ summary(m4)
 soilS <- get_model_data(m4, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]")
 soilS
 
-# Fig. S2 b ----
+# Fig. S2 b -------------------------------------------------------------------
 
-Fig.soilC <- ggplot(soilS, aes(x, predicted)) +
+fig_soilC <- ggplot(soilS, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = gamma_data, aes(pca1_clima, Corg_percent, fill = habitat, col = habitat),
     size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Soil C", x = "Climate gradient (PC)") +
   geom_line(linetype = 1, linewidth = 1, col = "black")
 
-Fig.soilC
+fig_soilC
 
+# Correlation among litter cover and climate PC ------------------------------
 
 min(gamma_data$cover_litter)
 
-
-## Litter % ----
-
 m5 <- lm(log(cover_litter + 1) ~ poly(pca1_clima, 1), data = gamma_data)
 
-# check model
-
+# check model assumptions
 par(mfrow = c(2, 2))
 plot(m5)
 par(mfrow = c(1, 1))
@@ -464,26 +435,22 @@ summary(m5)
 Litter <- get_model_data(m5, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]")
 Litter
 
-# Fig. S2 c ----
-
-
-Fig.Litter <- ggplot(Litter, aes(x, predicted)) +
+# Fig. S2 c -------------------------------------------------------------------
+fig_litter <- ggplot(Litter, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = gamma_data, aes(pca1_clima, cover_litter, fill = habitat, col = habitat),
     size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Litter cover", x = "Climate gradient (PC)") +
   geom_line(linetype = 1, linewidth = 1, col = "black")
 
-Fig.Litter
+fig_litter
 
 
-
-
+# Correlation among soil C and litter cover ----------------------------------
 m6 <- lm(log(cover_litter + 1) ~ Corg_percent, data = gamma_data)
 
-# check model
-
+# check model assumptions
 par(mfrow = c(2, 2))
 plot(m6)
 par(mfrow = c(1, 1))
@@ -491,24 +458,22 @@ par(mfrow = c(1, 1))
 Anova(m6)
 summary(m6)
 
-
 Corg <- get_model_data(m6, type = "pred", terms = "Corg_percent[0:9.5, by=.001]")
 Corg
 
-# Fig. S2 d ----
+# Fig. S2 d -------------------------------------------------------------------
 
-Fig.Corg <- ggplot(Corg, aes(x, predicted)) +
+fig_Corg <- ggplot(Corg, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = gamma_data, aes(Corg_percent, cover_litter, fill = habitat, col = habitat),
     size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Litter cover", x = "Soil C") +
   geom_line(linetype = 1, linewidth = 1, col = "black")
 
-Fig.Corg
+fig_Corg
 
-
-# Plant cover -----
+# Plant cover ---------------------------------------------------------------
 
 # alpha scale
 tot_cover_10 <- read_csv("data/species_matrix_total.csv") %>%
@@ -610,7 +575,7 @@ Fig.alphaSR_PlantCover <- ggplot(alphaSR_PlantCover, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_data_cover, aes(total_cover_10, alpha_10_div, fill = habitat, col = habitat),
     size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Plant cover') +
   geom_line(linetype = 1, linewidth = 1, col = "#64ABCE")
 
@@ -631,7 +596,7 @@ Fig.gammaSR_PlantCover <- ggplot(gammaSR_PlantCover, aes(x, predicted)) +
   geom_point(data = gamma_data_cover, aes(total_cover_100, gamma_100_div,
     fill = habitat, col = habitat),
   size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Plant cover') +
   geom_line(linetype = 1, linewidth = 1, col = "#D6604D")
 
@@ -654,7 +619,7 @@ Fig.betaSR_PlantCover <- ggplot(betaSR_PlantCover, aes(x, predicted)) +
   geom_point(data = beta_data_cover, aes(total_cover_100, beta_100_div,
     fill = habitat, col = habitat),
   size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Plant cover') +
   geom_line(linetype = 1, linewidth = 1, col = "#00AC7F")
 
