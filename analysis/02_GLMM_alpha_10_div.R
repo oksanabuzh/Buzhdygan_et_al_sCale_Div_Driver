@@ -3,11 +3,11 @@
 
 # load libraries -------------------------------------------------------------
 library(tidyverse)
-library(car)
 library(lme4)
+library(performance)
+library(car)
 library(lmerTest)
 library(sjPlot)
-library(performance)
 library(patchwork)
 
 # Define habitat colors to be used in all plots to distinguish habitats
@@ -97,7 +97,7 @@ alpha_data$dataset
 # (1) Species richness -------------------------------------------------------
 # ----------------------------------------------------------------------------#
 
-#  Data Exploration ---- -----------------------------------------------------
+#  Data Exploration -----------------------------------------------------------
 # Take mean across two subplots for the purpose of plotting:
 # plot on a mean alpha per series to omit pseudoreplication of the plots on the figure:
 alpha_mean <- alpha_data %>%
@@ -117,6 +117,7 @@ alpha_mean <- alpha_data %>%
 
 str(alpha_mean)
 
+# Plot alpha diversity against environmental variables ------------------------
 ggplot(alpha_mean, aes(pca1_clima, alpha_10_div)) +
   geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
@@ -142,19 +143,17 @@ ggplot(alpha_mean, aes(Corg_percent, alpha_10_div)) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(grazing_intencity, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.4)) +
+  geom_point(size = 2, aes(color = habitat), position = position_jitter(width = 0.4)) +
   scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(mowing, alpha_10_div)) +
   geom_boxplot() +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.1)) +
+  geom_point(size = 2, aes(color = habitat), position = position_jitter(width = 0.1)) +
   scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
-
-
-## GLLM----
+# GLLM analyses ----------------------------------------------------------------
 
 ### Exploration----
 
@@ -178,10 +177,8 @@ qqline(resid(m))
 # check multicolinearity
 check_collinearity(m)
 
-
 # check overdispersion
 sum(residuals(m, type = "pearson")^2) / df.residual(m)
-
 
 Anova(m)
 summary(m)
@@ -194,9 +191,7 @@ MuMIn::r.squaredGLMM(m)
 # Partial R2 for fixed effects
 r2glmm::r2beta(m, partial = T, data = alpha_data)
 
-
-
-### Test random effects ----
+# Test random effects --------------------------------------------------------
 
 # check random effects
 ranef(m) # not zeros
@@ -225,7 +220,7 @@ anova(RE_m1, RE_m2)
 # as a random effect
 
 
-## Model 1: all predictors (except precipitation CV)----
+# Model 1: all predictors (except precipitation CV) ----------------------------
 # test quadratic effects of climate, soil C, pH, and litter
 
 # poly(pca1_clima, 2) is marginal
@@ -274,7 +269,7 @@ AIC(m1_1, m1_2, m1_3, m1_4) %>%
 Anova(m1_3)
 # Anova(m1_1) # lowest AIC
 
-## Model 2: Add Prec_Varieb ----
+# Model 2: Add Prec_Varieb ---------------------------------------------------
 
 m2_1 <- glmer(alpha_10_div ~
   poly(pca1_clima, 2) +
@@ -302,6 +297,7 @@ AIC(m2_1, m2_2) %>%
 Anova(m2_1)
 # Anova(m2_2)
 
+# Todo: is this in the MS or can we move it to the _for_review_only scripts??
 ## -> Additional analysis (requested by reviewer) -----
 # Comment "I am unsure if you can conclude that the precipitation variability
 # effect is shown. Perhaps you just repeat the hump-shape pattern of the environmental gradient.
@@ -330,8 +326,6 @@ Anova(m3_2)
 
 
 # Plots----
-#         saline    complex       dry       wet       mesic        fringe       alpine
-col = c("#4e3910", "#CC6600", "#e3c28b", "#CC99FF", "#0066FF", "#00B200", "#006600")
 
 set_theme(base = theme_bw(), axis.textsize.x = 1, axis.textsize.y = 1, axis.textcolor = "black",
   axis.title.color = "black", axis.title.size = 1.4, legend.pos = "None", geom.linetype = 2)
