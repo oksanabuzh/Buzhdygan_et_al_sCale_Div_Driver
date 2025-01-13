@@ -1,9 +1,23 @@
-# Purpose: Descriptive and summary statistics
+# Purpose: Descriptive and summary statistics. 
+# In this script we will prepare data for the following plots:
+# - Figure 1 b: Species richness for each scale and habitat type
+# - Fig. S7: Species richness at 100-m² plots for each habitat type
+# - Fig. S7b: Beta diversity at 100-m² plots for each habitat type
+# - Fig. S3 a: Species richness for each scale
+# - Fig. S3 b: ENSPIE for each scale
+# - Fig. S3 c: R2 models for SR
+# - Fig. S3 d: R2 models for ENSPIE
+# - Fig. S1 a: Correlation among Temperature and precipitation
+# - Fig. S1 b: Correlation among precipitation variability and climate PC
+# - Fig. S2 a: Correlation among soil pH and climate PC
+# - Fig. S2 b: Correlation among soil C and climate PC
+# - Fig. S2 c: Correlation among litter cover and climate PC
+# - Fig. S2 d: Correlation among soil C and litter cover
+# - Fig. 43 e: Plant cover
 
 library(tidyverse)
 library(sjPlot)
 library(lme4)
-library(performance)
 
 # Define habitat colors to be used in all plots to distinguish habitats
 # define habitat colors
@@ -19,7 +33,7 @@ habitat_colors = c(
 # Read and prepare data -------------------------------------------------------
 
 # Read climate PCA data
-climate_PCA <- read.csv("data/climate_PCA.csv")
+climate_PCA <- read_csv("data/climate_PCA.csv")
 
 # Read header data with environmental variables for each series and subplot
 header <- read_csv("data/Environm_variabl.csv") %>%
@@ -311,6 +325,7 @@ plot_model(m1, type = "pred", terms = "Temprt", # show.data=F,
 Temp <- get_model_data(m1, type = "pred", terms = "Temprt")
 Temp
 
+# todo: What is this and where does it come from
 clima_pred_10m$x
 clima_pred_10m$predicted
 clima_pred_10m$conf.low
@@ -387,8 +402,6 @@ fig_ph <- ggplot(ph, aes(x, predicted)) +
 
 fig_ph
 
-
-
 # Correlation among soil C and climate PC -------------------------------------
 
 m4 <- lm(log(Corg_percent) ~ poly(pca1_clima, 2), data = gamma_data)
@@ -400,7 +413,6 @@ par(mfrow = c(1, 1))
 
 Anova(m4)
 summary(m4)
-
 
 soilS <- get_model_data(m4, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]")
 soilS
@@ -428,9 +440,8 @@ par(mfrow = c(2, 2))
 plot(m5)
 par(mfrow = c(1, 1))
 
-Anova(m5)
+car::Anova(m5)
 summary(m5)
-
 
 Litter <- get_model_data(m5, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]")
 Litter
@@ -446,7 +457,6 @@ fig_litter <- ggplot(Litter, aes(x, predicted)) +
 
 fig_litter
 
-
 # Correlation among soil C and litter cover ----------------------------------
 m6 <- lm(log(cover_litter + 1) ~ Corg_percent, data = gamma_data)
 
@@ -455,7 +465,7 @@ par(mfrow = c(2, 2))
 plot(m6)
 par(mfrow = c(1, 1))
 
-Anova(m6)
+car::Anova(m6)
 summary(m6)
 
 Corg <- get_model_data(m6, type = "pred", terms = "Corg_percent[0:9.5, by=.001]")
@@ -475,6 +485,7 @@ fig_Corg
 
 # Plant cover ---------------------------------------------------------------
 
+# todo: This data does not exist!
 # alpha scale
 tot_cover_10 <- read_csv("data/species_matrix_total.csv") %>%
   filter(scale == 10) %>%
