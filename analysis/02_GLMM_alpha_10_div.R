@@ -1,18 +1,28 @@
 # Purpose: Analysis for the 10-m2 plots (alpha diversity)
 
 
-# libraries----
+# load libraries -------------------------------------------------------------
 library(tidyverse)
 library(car)
 library(lme4)
 library(lmerTest)
-library(ggplot2)
 library(sjPlot)
 library(performance)
 library(patchwork)
 
+# Define habitat colors to be used in all plots to distinguish habitats
+# define habitat colors
+habitat_colors = c(
+  saline = "#4e3910",
+  complex = "#CC6600",
+  dry = "#e3c28b",
+  wet = "#CC99FF",
+  mesic = "#0066FF",
+  fringe = "#00B200",
+  alpine = "#006600")
 
-# data----
+
+# Read and prepare data -------------------------------------------------------
 
 # "data/alpha_beta_gamma_community_variabl.csv" combines all diversity measures and plant cover
 # alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots,
@@ -31,8 +41,7 @@ library(patchwork)
 
 # "data/Environm_variabl.csv" contains all environmental data
 
-
-climate_PCA <- read.csv("data/climate_PCA.csv")
+climate_PCA <- read_csv("data/climate_PCA.csv")
 
 header <- read_csv("data/Environm_variabl.csv") %>%
   full_join(
@@ -61,7 +70,7 @@ names(alpha)
 alpha$dataset
 
 
-# Remove NAs
+# Remove NAs and select only needed variables
 alpha_data <- alpha %>%
   dplyr::select(alpha_10_div, alpha_10_ENSPIE,
     pca1_clima,
@@ -76,21 +85,20 @@ alpha_data <- alpha %>%
     mowing = factor(mowing)) %>%
   mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
     "wet", "mesic", "fringe", "alpine"))) %>%
-
-  drop_na
+  drop_na()
 
 str(alpha_data)
 alpha_data$dataset
 
 
-# Analysis -----------------
+# Start Analysis -------------------------------------------------------------
 
-#---------------------------#
-# (1) Species richness -----
-# --------------------------#
+#-----------------------------------------------------------------------------#
+# (1) Species richness -------------------------------------------------------
+# ----------------------------------------------------------------------------#
 
-##  Data Exploration----
-# Take mean across two subplots for the purpose of plottin:
+#  Data Exploration ---- -----------------------------------------------------
+# Take mean across two subplots for the purpose of plotting:
 # plot on a mean alpha per series to omit pseudoreplication of the plots on the figure:
 alpha_mean <- alpha_data %>%
   dplyr::select(alpha_10_div, alpha_10_ENSPIE,
@@ -105,47 +113,43 @@ alpha_mean <- alpha_data %>%
     mowing = factor(mowing)) %>%
   mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
     "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na
+  drop_na()
 
 str(alpha_mean)
 
-#         saline    complex       dry       wet       mesic        fringe       alpine
-col = c("#4e3910", "#CC6600", "#e3c28b", "#CC99FF", "#0066FF", "#00B200", "#006600")
-
-
 ggplot(alpha_mean, aes(pca1_clima, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(Prec_Varieb, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(pca1_clima, Prec_Varieb)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(cover_litter, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(pH, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(Corg_percent, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(grazing_intencity, alpha_10_div)) +
   geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.4)) +
-  scale_color_manual(values = col) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(mowing, alpha_10_div)) +
   geom_boxplot() +
   geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.1)) +
-  scale_color_manual(values = col) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 
@@ -351,7 +355,7 @@ clima_pred_10m$conf.high
 Fig.alphaSR_clima <- ggplot(clima_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean, aes(pca1_clima, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Climate gradient (PC)') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
@@ -367,7 +371,7 @@ Fig.alphaSR_soilC <- ggplot(Humus_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean,
     aes(Corg_percent, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Soil C') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
@@ -382,7 +386,7 @@ Litter_pred_10m
 Fig.alphaSR_Litter <- ggplot(Litter_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean, aes(cover_litter, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Litter cover') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
@@ -397,7 +401,7 @@ pH_pred_10m
 Fig.alphaSR_soil.pH <- ggplot(pH_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean, aes(pH, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Soil pH') +
   geom_line(linetype = 5, size = 0.5, col = "#64ABCE")
 
@@ -407,7 +411,7 @@ plot_model(m1_1, type = "pred", terms = "pH[3.7:9, by=.001]", # show.data=F,
   title = "", line.size = 0.5) + aes(linetype = "solid") +
   labs(y = "gamma SR", x = 'Soil pH') +
   geom_point(data = alpha_data, aes(pH, alpha_10_div, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = col) # +  labs(color='Habitat type') +
+  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type') +
 
 
 
@@ -419,7 +423,7 @@ grazing_pred_10m
 Fig.alphaSR_grazing <- ggplot(grazing_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean, aes(grazing_intencity, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Grazing intencity') +
   geom_line(linetype = 5, size = 0.5, col = "#64ABCE")
 
@@ -434,7 +438,7 @@ plot_model(m1_3, type = "pred", terms = "mowing", show.data = T,
 Fig.alphaSR_mowing <- ggplot(alpha_mean, aes(mowing, alpha_10_div)) +
   geom_boxplot(color = "#64ABCE") +
   geom_point(aes(color = habitat, fill = habitat), pch = 21, position = position_jitter(w = 0.1), size = 3, alpha = 0.8) +
-  scale_color_manual(values = col) + scale_fill_manual(values = col) +
+  scale_color_manual(values = habitat_colors) + scale_fill_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Mowing')
 
 Fig.alphaSR_mowing
@@ -447,7 +451,7 @@ precipCV_pred_10m
 Fig.alphaSR_precip.CV <- ggplot(precipCV_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean, aes(Prec_Varieb, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Precipitation variability') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
@@ -457,7 +461,7 @@ plot_model(m2_1, type = "pred", terms = "Prec_Varieb", #  show.data=F
   title = "", line.size = 0.5) + aes(linetype = "solid") +
   labs(y = "alpha SR ", x = 'Precipitation variability') +
   geom_point(data = alpha_mean, aes(Prec_Varieb, alpha_10_div, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = col) # +  labs(color='Habitat type')
+  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type')
 
 # Plots combined ----
 # for alpha SR (10 m^2)
@@ -535,38 +539,38 @@ col = c("#4e3910", "#CC6600", "#e3c28b", "#CC99FF", "#0066FF", "#00B200", "#0066
 
 
 ggplot(alpha_mean, aes(pca1_clima, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(Prec_Varieb, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(pca1_clima, Prec_Varieb)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(cover_litter, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(pH, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(Corg_percent, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = col) +
+  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(grazing_intencity, alpha_10_ENSPIE)) +
   geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.4)) +
-  scale_color_manual(values = col) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(mowing, alpha_10_ENSPIE)) +
   geom_boxplot() +
   geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.1)) +
-  scale_color_manual(values = col) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 
@@ -746,7 +750,7 @@ clima_pred_10m_Ensp
 Fig.alphaENSPIE_clima <- ggplot(clima_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean, aes(pca1_clima, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Climate gradient (PC)') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
@@ -756,7 +760,7 @@ plot_model(m1_1_ENSPIE, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]", 
   title = "", line.size = 1) + aes(linetype = "solid") +
   labs(y = expression(paste("alpha ENS"[PIE])), x = 'Climate gradient (PC)') +
   geom_point(data = alpha_mean, aes(pca1_clima, alpha_10_ENSPIE, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = col) # +  labs(color='Habitat type')
+  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type')
 
 
 ## Soil C ----
@@ -767,7 +771,7 @@ Humus_pred_10m_Ensp
 Fig.alphaENSPIE_soilC <- ggplot(Humus_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean, aes(Corg_percent, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Soil C') +
   geom_line(linetype = 5, size = 0.5, col = "#64ABCE")
 
@@ -782,7 +786,7 @@ Litter_pred_10m_Ensp
 Fig.alphaENSPIE_Litter <- ggplot(Litter_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean, aes(cover_litter, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Litter cover') +
   geom_line(linetype = 1, size = 0.5, col = "#64ABCE")
 
@@ -792,7 +796,7 @@ plot_model(m1_1_ENSPIE, type = "pred", terms = "cover_litter[0:100, by=0.01]", #
   title = "", line.size = 0.5) + aes(linetype = "solid") +
   labs(y = expression(paste("alpha ENS"[PIE])), x = 'Litter cover') +
   geom_point(data = alpha_mean, aes(cover_litter, alpha_10_ENSPIE, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = col) # +  labs(color='Habitat type') +
+  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type') +
 
 
 
@@ -803,7 +807,7 @@ pH_pred_10m_Ensp
 Fig.alphaENSPIE_soil.pH <- ggplot(pH_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean, aes(pH, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Soil pH') +
   geom_line(linetype = 5, size = 0.5, col = "#64ABCE")
 
@@ -817,7 +821,7 @@ grazing_pred_10m_Ensp
 Fig.alphaENSPIE_grazing <- ggplot(grazing_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean, aes(grazing_intencity, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Grazing intencity') +
   geom_line(linetype = 5, size = 0.5, col = "#64ABCE")
 
@@ -832,7 +836,7 @@ plot_model(m1_1_ENSPIE, type = "pred", terms = "mowing", show.data = T,
 Fig.alphaENSPIE_mowing <- ggplot(alpha_mean, aes(mowing, alpha_10_ENSPIE)) +
   geom_boxplot(color = "#64ABCE") +
   geom_point(aes(color = habitat, fill = habitat), pch = 21, position = position_jitter(w = 0.1), size = 3, alpha = 0.8) +
-  scale_color_manual(values = col) + scale_fill_manual(values = col) +
+  scale_color_manual(values = habitat_colors) + scale_fill_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Mowing') + labs(color = 'Habitat type')
 
 Fig.alphaENSPIE_mowing
@@ -845,7 +849,7 @@ precipCV_pred_10m_Ensp
 Fig.alphaENSPIE_precip.CV <- ggplot(precipCV_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean, aes(Prec_Varieb, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = col) + scale_color_manual(values = col) +
+  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Precipitation variability') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
