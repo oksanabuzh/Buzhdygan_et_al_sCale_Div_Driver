@@ -299,6 +299,30 @@ AIC(m2_1, m2_2) %>%
 Anova(m2_1)
 # Anova(m2_2)
 
+## -> Additional analysis for precipitation CV effects  -----
+# Analysis whether precipitation variability adds explanatory power beyond the 
+# nonlinear effect of the climate gradient:
+# Model m3_1 includes both linear and quadratic terms for the climate gradient. 
+# Model m3_2 includes the linear effects of both climate gradient and 
+# precipitation variability (i.e., the quadratic term for the climate gradient was replaced by precipitation variability).
+# If the latter model is better (e.g. AIC is smaller than two units), we have more support for claim that the precipitation variability effect is shown.
+
+m3_1 <- glmer (alpha_10_div ~ 
+                 poly(pca1_clima, 2) +
+                 (1|dataset/series), family = "poisson", data = alpha_data)
+
+m3_2 <- glmer (alpha_10_div ~ 
+                 pca1_clima + Prec_Varieb +
+                 (1|dataset/series), family = "poisson", data = alpha_data)
+
+
+# calculate and compare AIC 
+AIC(m3_1, m3_2) %>% 
+  arrange(+AIC) %>% 
+  mutate(delta_AIC=AIC-min(AIC))
+
+Anova(m3_1)
+Anova(m3_2)
 
 # Plots----
 #         saline    complex       dry       wet       mesic        fringe       alpine
@@ -649,6 +673,33 @@ AIC(m2_1_ENSPIE, m2_2_ENSPIE) %>%
   mutate(delta_AIC=AIC-min(AIC))
 
 Anova(m2_1_ENSPIE)
+
+
+
+## -> Additional analysis for precipitation CV effects  -----
+# Analysis whether precipitation variability adds explanatory power beyond the 
+# nonlinear effect of the climate gradient:
+# Model m3_1_ENSPIE includes both linear and quadratic terms for the climate gradient. 
+# Model m3_2_ENSPIE includes the linear effects of both climate gradient and 
+# precipitation variability (i.e., the quadratic term for the climate gradient was replaced by precipitation variability).
+# If the latter model is better (e.g. AIC is smaller than two units), we have more support for claim that the precipitation variability effect is shown.
+
+m3_1_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~ 
+                      poly(pca1_clima, 2) +
+                      (1|dataset/series),  data = alpha_data)
+
+m3_2_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~ 
+                      pca1_clima +
+                      Prec_Varieb +
+                      (1|dataset/series),  data = alpha_data)
+
+# calculate and compare AIC 
+AIC(m3_1_ENSPIE, m3_2_ENSPIE) %>% 
+  arrange(+AIC) %>% 
+  mutate(delta_AIC=AIC-min(AIC))
+
+Anova(m3_1_ENSPIE)
+Anova(m3_2_ENSPIE)
 
 
 # Plots----

@@ -9,53 +9,91 @@
 #         Standardized coefficient of composit is the total non-linear effect of predictor(i.e., x and x^2), controlling for other predictors in the model
 
 
-dev.off()
+# dev.off()
 
 #
 library(tidyverse)
 
 # data----
-alpha <-read_csv ("Data/alpha_GLM.csv") 
+
+# "data/alpha_beta_gamma_community_variabl.csv" combines all diversity measures and plant cover
+# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots, 
+## thus "series" (i.e. 100m2 plots), nested in dataset (separate vegetation survey campaign) 
+## are fitted as a random effect
+# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the 10m2 plots)
+# beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
+
+## SR - species richness
+## ENSPIE - evenness measure calculated as inverse Simpson using species cover
+## cover - is cumulative plant cover
+
+
+# "data/climate_PCA.csv" contains scores for the compound climate variable, 
+# derived from the PCA analysis in "1_prepare_data/ PCA_environment.R"
+
+# "data/Environm_variabl.csv" contains all environmental data
+
+
+climate_PCA <- read.csv("data/climate_PCA.csv")
+
+header <- read_csv("data/Environm_variabl.csv") %>% 
+  full_join(
+    read.csv("data/climate_PCA.csv"),
+    by = "series"
+  )
+
+str(header) 
+names (header)
+
+# prepare subset of data for alpha scale (10-m2 plots)
+
+alpha <-read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
+  filter(type=="alpha")%>% 
+  unite("metric", c(type, scale, metric), sep="_") %>% 
+  pivot_wider(names_from = metric, values_from = value) %>% 
+  full_join(header, 
+            by=c("dataset", "plotID", "series", "subplot")
+  ) %>% 
+  mutate(dataset=factor(dataset))
+
 str(alpha) 
 names (alpha)
 
 # dataset is a separate vegetation survey campaign
-alpha$dataset <- factor(alpha$dataset)
+alpha$dataset 
 
 
-# Remove NAs  
+# selected variables, removed NAs
 alpha_data <- alpha %>% 
-  select(alpha_10_div, alpha_10_ENSPIE,  
-         pca1_clima, 
-         grazing_intencity, mowing, 
-         # cover_shrub_total,     inclination, 
-         cover_litter,
-         BIO7, BIO15,
-         pH, Corg_percent,
-         dataset, series, eunis_group, habitat_broad, zonality) %>% 
+  dplyr::select(alpha_10_div, alpha_10_ENSPIE,  
+                pca1_clima, 
+                grazing_intencity, mowing, 
+                cover_litter,
+                BIO7, BIO15,
+                pH, Corg_percent,
+                dataset, series, habitat_broad,
+                subplot) %>% 
   mutate(Tem_range = BIO7,
          Prec_Varieb = BIO15) %>% 
-  mutate(habitat =fct_relevel(habitat_broad, c("saline", "complex", "dry", 
-                                               "wet" , "mesic", "fringe", "alpine"))) %>% 
+  mutate(habitat =fct_relevel(habitat_broad, 
+                              c("saline", "complex", "dry",
+                                "wet" , "mesic", "fringe", "alpine"))) %>% 
+  
   drop_na
 
 str(alpha_data)
-
 alpha_data$dataset
 
-
-
+# Create manually quadratic terms 
 alpha_data$pca1_clima_2<- (as.vector(scale(alpha_data$pca1_clima, center = TRUE, scale = F)))^2
 alpha_data$pH_2<- (as.vector(scale(alpha_data$pH,  center = T, scale=F)))^2 
-#alpha_$pH_2<-alpha_$pH^2 
+ 
 cor(alpha_data$pH, alpha_data$pH_2)
 
 alpha_data$cover_litter_2<- (as.vector(scale(alpha_data$cover_litter,  center = T, scale=F)))^2 
 
 
-# alpha SR -----
-
-
+# alpha SR (GLMS) -----
 # Check the model:
 m <- glmer (alpha_10_div ~ 
                poly(pca1_clima, 2) +
@@ -70,14 +108,6 @@ m <- glmer (alpha_10_div ~
 sum(residuals(m, type = "pearson")^2) / df.residual(m)
 
 check_collinearity(m)
-
-
-plot_model(m,type = "pred", terms = c("pca1_clima"), show.data=T)
-plot_model(m,type = "pred", terms = c("pH"), show.data=T)
-plot_model(m,type = "pred", terms = c("Corg_percent"), show.data=T)
-plot_model(m,type = "pred", terms = c("cover_litter"), show.data=T)
-plot_model(m,type = "pred", terms = c("grazing_intencity"), show.data=T)
-plot_model(m,type = "pred", terms = c("mowing"), show.data=T)
 
 
 ## 1) Create composites to captures the collective effect of x and x^2 on y ----
@@ -124,7 +154,7 @@ check_collinearity(m_alpha)
 ## 3) Obtain  the standardized coefficients of predictors ----
 # standardized coefficient of composit is the total non-linear effect of predictor(i.e., x and x^2), controlling for other predictors in the model
 # use the coefs function from piecewiseSEM to obtain the standardized coefficients
-alpha.SR_Std.Estimate <- coefs(m_alpha, standardize = "scale", standardize.type = "Menard.OE")[,c(1,2,7,8,9)]
+alpha.SR_Std.Estimate <- piecewiseSEM::coefs(m_alpha, standardize = "scale", standardize.type = "Menard.OE")[,c(1,2,7,8,9)]
 alpha.SR_Std.Estimate
 
 
@@ -161,14 +191,6 @@ qqline(resid(m_ENSPIE_b))
 check_collinearity(m_ENSPIE_b)
 
 Anova(m_ENSPIE_b)
-
-plot_model(m_ENSPIE_b,type = "pred", terms = c("pca1_clima"), show.data=T)
-plot_model(m_ENSPIE_b,type = "pred", terms = c("pH"), show.data=T)
-plot_model(m_ENSPIE_b,type = "pred", terms = c("Corg_percent"), show.data=T)
-plot_model(m_ENSPIE_b,type = "pred", terms = c("cover_litter"), show.data=T)
-plot_model(m_ENSPIE_b,type = "pred", terms = c("grazing_intencity"), show.data=T)
-plot_model(m_ENSPIE_b,type = "pred", terms = c("mowing"), show.data=T)
-
 
 ## 1) Create composites to captures the collective effect of x and x^2 on y ----
 
@@ -213,5 +235,5 @@ check_collinearity(m_alpha_ENSPIE)
 ## 3) Obtain  the standardized coefficients of predictors ----
 # standardized coefficient of composit is the total non-linear effect of predictor(i.e., x and x^2), controlling for other predictors in the model
 # use the coefs function from piecewiseSEM to obtain the standardized coefficients
-alpha.ENSPIE_Std.Estimate <- coefs(m_alpha_ENSPIE, standardize = "scale", standardize.type = "Menard.OE")[,c(1,2,7,8,9)]
+alpha.ENSPIE_Std.Estimate <- piecewiseSEM::coefs(m_alpha_ENSPIE, standardize = "scale", standardize.type = "Menard.OE")[,c(1,2,7,8,9)]
 alpha.ENSPIE_Std.Estimate
