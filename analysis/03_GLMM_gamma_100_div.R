@@ -52,7 +52,7 @@ header_mean <- header %>%
   ungroup()
 
 
-# prepare subset of data for alpha scale (10-m2 plots)
+# prepare subset of data for gamma scale (100-m2 plots)
 
 beta_gamma <-read_csv("data/alpha_beta_gamma_community_variabl.csv") %>% 
   filter(type=="gamma" | type=="beta" )%>% 
