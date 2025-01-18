@@ -1,8 +1,6 @@
-# Buzhdygan_et_al_sCale_Div_Driver
+#  Scale-dependent effects of plant diversity drivers in grasslands
 
-## About
-
-This repository contains all the code for the paper
+#### Code and data for
 
 Buzhdygan et al. (2025) Scale-dependent effects of plant diversity drivers in grasslands,
 Ecology and Evolution, in press
