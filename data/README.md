@@ -6,7 +6,7 @@ Contains data that are used for analysis
 
 #### Structure
 
-| Document                               | What's inside                            |
+| Document                               | Description                              |
 | -------------------------------------- |----------------------------------------- |
 | Environm_variab.csv                    | Environmental data                       |
 | alpha_beta_gamma_community_variabl.csv | Plant diversity measures and plant cover for each scale |
