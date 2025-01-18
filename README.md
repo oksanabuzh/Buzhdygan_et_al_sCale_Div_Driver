@@ -4,10 +4,10 @@
 
 ### Buzhdygan et al. (2025) Scale-dependent effects of plant diversity drivers in grasslands,Ecology and Evolution, in press
 
-# preprint [link](https://doi.org/10.22541/au.172534860.07243481/v1)
+### preprint [link](https://doi.org/10.22541/au.172534860.07243481/v1)
 
 
-# Cite the code and data: [![DOI](https://zenodo.org/...)](https://doi.org/...)
+### Cite the code and data: [![DOI](https://zenodo.org/...)](https://doi.org/...)
 
 <!-- badges: start -->
 <!-- badges: end -->
