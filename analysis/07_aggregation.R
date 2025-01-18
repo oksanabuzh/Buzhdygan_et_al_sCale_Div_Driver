@@ -1,5 +1,4 @@
-# Purpose: Analysis for spatial aggregation
-
+# Purpose: LMM analysis for spatial aggregation as response variable 
 # libraries----
 library(tidyverse)
 library(car)
