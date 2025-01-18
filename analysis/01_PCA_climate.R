@@ -1,4 +1,5 @@
-# Purpose: PCA analysis for extracting compaud variable of climate gradient
+# Purpose: PCA analysis for extracting compound variable of climate gradient 
+#                       (increasing precipitation and decreasing temperature)
 
 # packages -----
 library(tidyverse)
