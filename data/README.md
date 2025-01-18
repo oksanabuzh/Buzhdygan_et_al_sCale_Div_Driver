@@ -70,7 +70,14 @@ Contains scores for the compound climate variable, derived from the [PCA analysi
 
 
 ### -> aggregation
-Contains the proxy of intraspecific aggregation  for each plot. Spatial intraspecific aggregation was estimated by comparing dissimilarity in species covers between the two corners (i.e., two 10-m2 plots) within each 100-m2 plot. For this, we calculated  the balanced variation component of Bray–Curtis dissimilarity in species cover using ‘betapart’ package in R (Baselga & Orme, 2012). This measure is independent of total community abundance (total plant cover in our study) and measures the balanced variation in species abundance between two quadrats, i.e. when  cover increases for some species and decreases for others, maintaining similar total cover across quadrats, including also species turnover, where abundance of one species is replaced by other species (Baselga, 2017). Higher dissimilarity in covers of taxa between the two 10-m2 corners within the same 100-m2 plot implies higher intraspecific aggregation.
+Contains beta.BRAY.BAL - the proxy of intraspecific aggregation  for each plot. Spatial intraspecific aggregation was estimated by comparing dissimilarity in species covers between the two corners (i.e., two 10-m2 plots) within each 100-m2 plot. For this, we calculated  beta.BRAY.BAL - the balanced variation component of Bray–Curtis dissimilarity in species cover using ‘betapart’ package in R (Baselga & Orme, 2012). This measure is independent of total community abundance (total plant cover in our study) and measures the balanced variation in species abundance between two quadrats, i.e. when  cover increases for some species and decreases for others, maintaining similar total cover across quadrats, including also species turnover, where abundance of one species is replaced by other species (Baselga, 2017). Higher dissimilarity in covers of taxa between the two 10-m2 corners within the same 100-m2 plot implies higher intraspecific aggregation.
 
 Baselga, A. (2017). Partitioning abundance-based multiple-site dissimilarity into components: balanced variation in abundance and abundance gradients. Methods in Ecology and Evolution, 8(7), 799–808. https://doi.org/10.1111/2041-210X.12693
 Baselga, A., & Orme, C. D. L. (2012). Betapart: An R package for the study of beta diversity. Methods in Ecology and Evolution, 3(5), 808–812. https://doi.org/10.1111/j.2041-210X.2012.00224.x
+
+
+#### Variables:			
+|Short name	| type |	Long name	| Description |
+| ----------|------|------------| ------------|
+|series	| character	| Series ID	| 100 m2 plot that includes two 10 m2 plots that are nested within it |
+|beta.BRAY.BAL	| numeric	| aggregation 	| Proxy of intraspecific aggregation of plant community |
