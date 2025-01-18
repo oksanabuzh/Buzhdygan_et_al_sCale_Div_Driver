@@ -2,7 +2,7 @@
 
 ### Code and data for
 
-## Buzhdygan et al. (2025) Scale-dependent effects of plant diversity drivers in grasslands, Ecology and Evolution, in press
+## Buzhdygan et al. (2025) Scale-dependent effects of plant diversity drivers across different grassland habitats in Ukraine, Ecology and Evolution, in press
 
 ### preprint [link](https://doi.org/10.22541/au.172534860.07243481/v1)
 
