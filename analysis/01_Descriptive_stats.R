@@ -1,5 +1,6 @@
 # Purpose: Descriptive and summary statistics
 
+# packages -----
 library(tidyverse)
 library(sjPlot)
 library(lme4)
@@ -7,11 +8,14 @@ library(performance)
 
 
 # data----
-## data-gamma----
+# series are 100m2 plots
+# subplot is one of the two corners (two 10 m2 plots) within same series
+# dataset is sampling campaign
 
+## climate PCA data----
+climate_PCA <- read_csv("data/climate_PCA.csv")
 
-climate_PCA <- read.csv("data/climate_PCA.csv")
-
+## environmental variables data----
 header <- read_csv("data/Environm_variabl.csv") %>% 
   full_join(
     read.csv("data/climate_PCA.csv"),
@@ -21,7 +25,9 @@ header <- read_csv("data/Environm_variabl.csv") %>%
 str(header) 
 names (header)
 
+## data for 100m2 (gamma) ----
 
+# mean per series (per 100m2 plots)
 header_mean <- header %>% 
   select(c(series,zonality, habitat_broad, 
            where(is.numeric))) %>% 
@@ -29,7 +35,7 @@ header_mean <- header %>%
   summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))  %>% 
   ungroup()
 
-
+# join with dataset for diversity measures
 beta_gamma <-read_csv("data/alpha_beta_gamma_community_variabl.csv") %>% 
   filter(type=="gamma" | type=="beta" )%>% 
   unite("metric", c(type, scale, metric), sep="_") %>% 
@@ -39,16 +45,15 @@ beta_gamma <-read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
 str(beta_gamma) 
 names (beta_gamma)
 
-# dataset is a separate vegetation survey campaign
-beta_gamma$dataset <- factor(beta_gamma$dataset)
 
-# Remove NAs 
+beta_gamma$dataset <- factor(beta_gamma$dataset)# dataset is a separate vegetation survey campaign
 
+
+# selected variables
 gamma_data <- beta_gamma %>% 
   dplyr::select(gamma_100_div, gamma_100_ENSPIE, 
                 pca1_clima, 
                 grazing_intencity, mowing, 
-                # cover_shrub_total,     inclination, 
                 cover_litter,
                 BIO7, BIO15,BIO1, BIO12,
                 pH, Corg_percent,
@@ -58,8 +63,9 @@ gamma_data <- beta_gamma %>%
          Temprt = BIO1,
          Precipt=BIO12,
          mowing=factor(mowing)) %>% 
-  mutate(habitat =fct_relevel(habitat_broad, c("saline", "complex", "dry", 
-                                               "wet" , "mesic", "fringe", "alpine"))) %>% 
+  mutate(habitat =fct_relevel(habitat_broad, 
+                              c("saline", "complex", "dry", 
+                                "wet" , "mesic", "fringe", "alpine"))) %>% 
   drop_na
 
 
@@ -67,7 +73,7 @@ gamma_data <- beta_gamma %>%
 str(gamma_data)
 
 
-## data-alpha----
+## data for 10 m2 (alpha) ----
 alpha <-read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   filter(type=="alpha")%>% 
   unite("metric", c(type, scale, metric), sep="_") %>% 
@@ -78,16 +84,14 @@ alpha <-read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
 str(alpha) 
 names (alpha)
 
-# dataset is a separate vegetation survey campaign
-alpha$dataset <- factor(alpha$dataset)
 
+alpha$dataset <- factor(alpha$dataset)# dataset is a separate vegetation survey campaign
 
-# Remove NAs  
+# selected variables 
 alpha_data <- alpha %>% 
   dplyr::select(alpha_10_div, alpha_10_ENSPIE,  
                 pca1_clima, 
                 grazing_intencity, mowing, 
-                # cover_shrub_total,     inclination, 
                 cover_litter,
                 BIO7, BIO15,
                 pH, Corg_percent,
@@ -96,13 +100,14 @@ alpha_data <- alpha %>%
   mutate(Tem_range = BIO7,
          Prec_Varieb = BIO15,
          mowing=factor(mowing)) %>% 
-  mutate(habitat =fct_relevel(habitat_broad, c("saline", "complex", "dry", 
-                                               "wet" , "mesic", "fringe", "alpine"))) %>% 
+  mutate(habitat =fct_relevel(habitat_broad, 
+                              c("saline", "complex", "dry",
+                                "wet" , "mesic", "fringe", "alpine"))) %>% 
   
   drop_na
 
 
-## Merge alpha & gamma ----
+## merge alpha & gamma ----
 
 str(alpha_data)
 
@@ -111,7 +116,7 @@ a <- alpha_data %>%
   mutate (scale="alpha", SR=alpha_10_div, ENSPIE=alpha_10_ENSPIE) %>% 
   select(scale, SR, ENSPIE, habitat)
 
-str(gamma_data)
+str(a)
 
 g <- gamma_data %>% 
   # pivot_longer(c("alpha_10_div", "alpha_10_ENSPIE"), names_to = "Diver") %>% 
@@ -124,7 +129,7 @@ alpha_gamma <- a %>%
 
 str(alpha_gamma)
 
-# data-beta ----
+## data-beta ----
 
 # Remove NAs 
 
