@@ -245,22 +245,22 @@ ggplot(alpha_gamma, aes(scale,ENSPIE, color=scale))+
 # plot model R2 for each scale
 
 # Fig. S3 c ----
-R2_alpha_SR <-read_csv ("results/partial_R2_M2_alpha_SR.csv") %>% 
+R2_alpha_SR <-read_csv ("results/R2_alpha_SR.csv") %>% #"results/partial_R2_M2_alpha_SR.csv") %>% 
   filter(Effect=="Model") %>% 
   mutate(scale="alpha", measure="SR")%>% 
   select(scale, measure, Rsq, upper.CL, lower.CL) 
 
-R2_alpha_ENSPIE <-read_csv ("results/partial_R2_M2_alpha_ENSPIE.csv") %>% 
+R2_alpha_ENSPIE <-read_csv ("results/R2_alpha_ENSPIE.csv") %>% 
   filter(Effect=="Model") %>% 
   mutate(scale="alpha", measure="ENSPIE")%>% 
   select(scale, measure, Rsq, upper.CL, lower.CL)
 
-R2_gamma_SR <-read_csv ("results/partial_R2_M2_gamma_SR.csv") %>% 
+R2_gamma_SR <-read_csv ("results/R2_gamma_SR.csv") %>% 
   filter(Effect=="Model") %>% 
   mutate(scale="gamma", measure="SR")%>% 
   select(scale, measure, Rsq, upper.CL, lower.CL) 
 
-R2_gamma_ENSPIE <-read_csv ("results/partial_R2_M2_gamma_ENSPIE.csv") %>% 
+R2_gamma_ENSPIE <-read_csv ("results/R2_gamma_ENSPIE.csv") %>% 
   filter(Effect=="Model") %>% 
   mutate(scale="gamma", measure="ENSPIE")%>% 
   select(scale, measure, Rsq, upper.CL, lower.CL) 
