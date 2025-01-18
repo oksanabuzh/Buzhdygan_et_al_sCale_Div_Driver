@@ -15,7 +15,7 @@ Contains data that are used for analysis
 
 ## Metadata
 
-### -> Environm_variab.csv 
+### `Environm_variab.csv` 
 This dataset contains all measured environmental data, that were used in the paper
 
 #### Variables:			
@@ -39,7 +39,7 @@ This dataset contains all measured environmental data, that were used in the pap
 
 
 
-### -> alpha_beta_gamma_community_variabl.csv
+### `alpha_beta_gamma_community_variabl.csv`
 Combines all diversity measures and plant cover for each scale:
 - alpha diversity and cover measures (SR, ENSPIE, and cover) include doubled 10 m2 plots
 - gamma diversity and cover measures (SR, ENSPIE, and cover) include 100 m2 plots (i.e. the sample size is half of what we have for the alpha diversity)
@@ -64,12 +64,12 @@ cover - cumulative cover of plant community
 |value	| numeric	| Value for the respective measure of plant community	| Value for the respective measure of plant community|
 
 
-### -> climate_PCA
-Contains scores for the compound climate variable, derived from the [PCA analysis](analysis/PCA_climate.R)
+### `climate_PCA.csv`
+Contains scores for the compound climate variable, derived from the [PCA analysis](analysis/PCA_climate.R), see `analysis/Readme.md` for details.
 
 
 
-### -> aggregation
+### `aggregation.csv`
 Contains beta.BRAY.BAL - the proxy of intraspecific aggregation  for each plot. Spatial intraspecific aggregation was estimated by comparing dissimilarity in species covers between the two corners (i.e., two 10-m2 plots) within each 100-m2 plot. For this, we calculated  beta.BRAY.BAL - the balanced variation component of Bray–Curtis dissimilarity in species cover using ‘betapart’ package in R (Baselga & Orme, 2012). This measure is independent of total community abundance (total plant cover in our study) and measures the balanced variation in species abundance between two quadrats, i.e. when  cover increases for some species and decreases for others, maintaining similar total cover across quadrats, including also species turnover, where abundance of one species is replaced by other species (Baselga, 2017). Higher dissimilarity in covers of taxa between the two 10-m2 corners within the same 100-m2 plot implies higher intraspecific aggregation.
 
 Baselga, A. (2017). Partitioning abundance-based multiple-site dissimilarity into components: balanced variation in abundance and abundance gradients. Methods in Ecology and Evolution, 8(7), 799–808. https://doi.org/10.1111/2041-210X.12693
