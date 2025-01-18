@@ -1,4 +1,4 @@
-# Purpose: Analysis for the 100 m^2 plots (gamma diversity)
+# Purpose: GLMM analysis for the 100 m^2 plots (gamma diversity)
 
 
 # libraries----
@@ -67,8 +67,7 @@ names (beta_gamma)
 # dataset is a separate vegetation survey campaign
 beta_gamma$dataset 
 
-# Remove NAs 
-
+# Select variables, remove NAs 
 gamma_data <- beta_gamma %>% 
   dplyr::select(gamma_100_div, gamma_100_ENSPIE, 
                 pca1_clima, 
@@ -81,8 +80,9 @@ gamma_data <- beta_gamma %>%
   mutate(Tem_range = BIO7,
          Prec_Varieb = BIO15,
          mowing=factor(mowing)) %>% 
-  mutate(habitat =fct_relevel(habitat_broad, c("saline", "complex", "dry", 
-                                               "wet" , "mesic", "fringe", "alpine"))) %>% 
+  mutate(habitat =fct_relevel(habitat_broad, 
+                              c("saline", "complex", "dry",
+                                "wet" , "mesic", "fringe", "alpine"))) %>% 
   drop_na
 
 
@@ -202,9 +202,8 @@ hist(ranef(m_b)$`dataset`[,1])
 Anova(m_b)
 summary(m_b)
 
-
+# Model selection ----
 ## Model 1: all predictors (except precipitation CV)----
-### Model selection ----
 # test quadratic effects of climate, soil C, pH, and litter 
 # poly(pca1_clima, 2) 
 # poly(pH, 2) is marginal
@@ -236,7 +235,6 @@ Anova(m1_1)
 # Anova(m1_2)
 
 ## Model 2: Add Prec_Varieb ----
-### Model selection ----
 m2_1 <- glmer.nb (gamma_100_div ~ 
                     poly(pca1_clima, 2) +
                     poly(Prec_Varieb, 2) +
@@ -263,31 +261,6 @@ AIC(m2_1, m2_2) %>%
 
 # Anova(m2_2)
 Anova(m2_1)
-
-## -> Additional analysis (requested by reviewer) -----
-# Comment "I am unsure if you can conclude that the precipitation variability 
-# effect is shown. Perhaps you just repeat the hump-shape pattern of the environmental gradient. 
-# Maybe you can compare if models, where you have both linear and quadratic terms of climate, 
-# differ from those where the quadratic term of climate is replaced by precipitation variability. 
-# If the latter model is better (e.g. AIC is smaller than two units), you have more support for this claim."
-
-m3_1 <- glmer.nb (gamma_100_div ~ 
-                    poly(pca1_clima, 2) +
-                    (1|dataset), data = gamma_data)
-
-
-m3_2 <- glmer.nb (gamma_100_div ~ 
-                          pca1_clima + Prec_Varieb +
-                          (1|dataset), data = gamma_data)
-
-# calculate and compare AIC 
-AIC(m3_1, m3_2) %>% 
-  arrange(+AIC) %>% 
-  mutate(delta_AIC=AIC-min(AIC))
-
-Anova(m3_1)
-Anova(m3_2)
-
 
 
 # Plots----
@@ -470,8 +443,8 @@ Fig.alphaSR_clima + Fig.gammaSR_clima +
 MuMIn::r.squaredGLMM(m1_1)
 MuMIn::r.squaredGLMM(m2_1)
 
-write.csv(MuMIn::r.squaredGLMM(m1_1),  file = "results/Mod1_R2_gamma_SR.csv")
-write.csv(MuMIn::r.squaredGLMM(m2_1),  file = "results/Mod2_R2_gamma_SR.csv")
+# write.csv(MuMIn::r.squaredGLMM(m1_1),  file = "results/Mod1_R2_gamma_SR.csv")
+# write.csv(MuMIn::r.squaredGLMM(m2_1),  file = "results/Mod2_R2_gamma_SR.csv")
 
 
 # Partial R2 for fixed effects
@@ -487,37 +460,19 @@ R2 <- r2glmm::r2beta(m2_1,  partial = T, data = gamma_data, method = 'sgv')
 R2
 
 
-write.csv(R1 %>% mutate(Effect = fct_relevel(Effect, c("poly(pca1_clima, 2)1", "poly(pca1_clima, 2)2", 
-                                                          "poly(Prec_Varieb, 2)1", "poly(Prec_Varieb, 2)2",
-                                                          "poly(Corg_percent, 2)1", "poly(Corg_percent, 2)2",  "Corg_percent",
-                                                          "poly(pH, 2)2", "poly(pH, 2)1", "pH",
-                                                          "poly(cover_litter, 2)1", "poly(cover_litter, 2)2",
-                                                          "grazing_intencity", "mowing1", "model"))) %>%
-            arrange(Effect),
-          file = "results/partial_R2_M1_gamma_SR.csv")
-
-write.csv(R2%>% mutate(Effect = fct_relevel(Effect, c("poly(pca1_clima, 2)1", "poly(pca1_clima, 2)2", 
-                                                         "poly(Prec_Varieb, 2)1", "poly(Prec_Varieb, 2)2",
-                                                         "poly(Corg_percent, 2)1", "poly(Corg_percent, 2)2",  "Corg_percent",
-                                                         "poly(pH, 2)2", "poly(pH, 2)1", "pH",
-                                                         "poly(cover_litter, 2)1", "poly(cover_litter, 2)2",
-                                                         "grazing_intencity", "mowing1", "model"))) %>%
-            arrange(Effect),
-          file = "results/partial_R2_M2_gamma_SR.csv")
 
 
-
-R <- R1 %>% 
-    bind_rows(R2 %>%
-                filter(Effect=="poly(Prec_Varieb, 2)1" | Effect=="poly(Prec_Varieb, 2)2")) %>%
-  filter(!Effect=="Model") 
+R <- R2 %>%
+  filter(Effect=="poly(Prec_Varieb, 2)1" | Effect=="poly(Prec_Varieb, 2)2" | 
+  Effect=="Model") %>%  
+    bind_rows(R1 %>% filter(!Effect=="Model"))
 
 write.csv(R,  file = "results/R2_gamma_SR.csv")
 
-write.csv(Anova(m1_1),  file = "results/glmer_gamma_SR.csv")
-write.csv(coef(summary(m1_1)),  file = "results/summary_gamma_SR.csv")
-write.csv(Anova(m2_1),  file = "results/glmer_gamma_SR_2.csv")
-write.csv(coef(summary(m2_1)),  file = "results/summary_gamma_SR_2.csv")
+# write.csv(Anova(m1_1),  file = "results/glmer_gamma_SR.csv")
+# write.csv(coef(summary(m1_1)),  file = "results/summary_gamma_SR.csv")
+# write.csv(Anova(m2_1),  file = "results/glmer_gamma_SR_2.csv")
+# write.csv(coef(summary(m2_1)),  file = "results/summary_gamma_SR_2.csv")
 
 
 
@@ -607,9 +562,10 @@ Anova(m_ENSPIE_b)
 plot_model(m_ENSPIE_b,type = "pred", terms="grazing_intencity", show.data=T,
            title = "", line.size=1) + aes(linetype="solid")
 
-# Model 1: all predictors (except precipitation CV)----
-# test quadratic effects of climate, soil C, pH, and litter 
 # Model selection ----
+
+## Model 1: all predictors (except precipitation CV)----
+# test quadratic effects of climate, soil C, pH, and litter 
 
 Anova(m_ENSPIE_b)
 
@@ -650,7 +606,7 @@ AIC(m1_1_ENSPIE, m1_2_ENSPIE, m1_3_ENSPIE) %>%
 Anova(m1_3_ENSPIE)
 
 
-# Model 2: Add Prec_Varieb ----
+## Model 2: Add Prec_Varieb ----
 
 ### Model selection -----
 m2_1_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~ 
@@ -682,32 +638,6 @@ AIC(m2_1_ENSPIE, m2_2_ENSPIE) %>%
 
 # Anova(m2_2)
 Anova(m2_1_ENSPIE)
-
-
-## -> Additional analysis (requested by reviewer) -----
-# Comment "I am unsure if you can conclude that the precipitation variability 
-# effect is shown. Perhaps you just repeat the hump-shape pattern of the environmental gradient. 
-# Maybe you can compare if models, where you have both linear and quadratic terms of climate, 
-# differ from those where the quadratic term of climate is replaced by precipitation variability. 
-# If the latter model is better (e.g. AIC is smaller than two units), you have more support for this claim."
-
-m3_1_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~ 
-                      poly(pca1_clima, 2) +
-                      (1|dataset),  data = gamma_data)
-
-m3_2_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~ 
-                      pca1_clima +
-                      Prec_Varieb +
-                      (1|dataset),  data = gamma_data)
-
-# calculate and compare AIC 
-AIC(m3_1_ENSPIE, m3_2_ENSPIE) %>% 
-  arrange(+AIC) %>% 
-  mutate(delta_AIC=AIC-min(AIC))
-
-Anova(m3_1_ENSPIE)
-Anova(m3_2_ENSPIE)
-
 
 
 # Plots----
@@ -844,8 +774,6 @@ Fig.alphaSR_clima + Fig.gammaSR_clima +
 
 
   
-  
-  
 
 # R2 for the entire model---------
 
@@ -853,10 +781,10 @@ Anova(m1_3_ENSPIE)
 Anova(m2_1_ENSPIE)# for Prec_Varieb
 
 
-write.csv(Anova(m1_3_ENSPIE),  file = "results/glmer_gamma_ENSPIE.csv")
-write.csv(coef(summary(m1_3_ENSPIE)),  file = "results/summary_gamma_ENSPIE.csv")
-write.csv(Anova(m2_1_ENSPIE),  file = "results/glmer_gamma_ENSPIE_2.csv")
-write.csv(coef(summary(m2_1_ENSPIE)),  file = "results/summary_gamma_ENSPIE_2.csv")
+# write.csv(Anova(m1_3_ENSPIE),  file = "results/glmer_gamma_ENSPIE.csv")
+# write.csv(coef(summary(m1_3_ENSPIE)),  file = "results/summary_gamma_ENSPIE.csv")
+# write.csv(Anova(m2_1_ENSPIE),  file = "results/glmer_gamma_ENSPIE_2.csv")
+# write.csv(coef(summary(m2_1_ENSPIE)),  file = "results/summary_gamma_ENSPIE_2.csv")
 
 
 # R2m and R2c are marginal (for fixed predictors) and 
@@ -865,8 +793,8 @@ MuMIn::r.squaredGLMM(m1_3_ENSPIE)
 MuMIn::r.squaredGLMM(m2_1_ENSPIE)
 
 
-write.csv(MuMIn::r.squaredGLMM(m1_3_ENSPIE),  file = "results/Mod1_R2_gamma_ENSPIE.csv")
-write.csv(MuMIn::r.squaredGLMM(m2_1_ENSPIE),  file = "results/Mod2_R2_gamma_ENSPIE.csv")
+# write.csv(MuMIn::r.squaredGLMM(m1_3_ENSPIE),  file = "results/Mod1_R2_gamma_ENSPIE.csv")
+# write.csv(MuMIn::r.squaredGLMM(m2_1_ENSPIE),  file = "results/Mod2_R2_gamma_ENSPIE.csv")
 
 
 # Partial R2 for fixed effects
@@ -878,32 +806,11 @@ R2_ENSPIE <- r2glmm::r2beta(m2_1_ENSPIE,  partial = T, data = gamma_data, method
 R2_ENSPIE
 
 
-write.csv(R1_ENSPIE %>% mutate(Effect = fct_relevel(Effect, c("poly(pca1_clima, 2)1", "poly(pca1_clima, 2)2", 
-                                                              "poly(Prec_Varieb, 2)1", "poly(Prec_Varieb, 2)2",
-                                                              "poly(Corg_percent, 2)1", "poly(Corg_percent, 2)2",  "Corg_percent",
-                                                              "poly(pH, 2)2", "poly(pH, 2)1", "pH",
-                                                              "poly(cover_litter, 2)1", "poly(cover_litter, 2)2",
-                                                              "grazing_intencity", "mowing1", "model"))) %>%
-            arrange(Effect),
-          file = "results/partial_R2_M1_gamma_ENSPIE.csv")
 
-write.csv(R2_ENSPIE%>% mutate(Effect = fct_relevel(Effect, c("poly(pca1_clima, 2)1", "poly(pca1_clima, 2)2", 
-                                                             "poly(Prec_Varieb, 2)1", "poly(Prec_Varieb, 2)2",
-                                                             "poly(Corg_percent, 2)1", "poly(Corg_percent, 2)2",  "Corg_percent",
-                                                             "poly(pH, 2)2", "poly(pH, 2)1", "pH",
-                                                             "poly(cover_litter, 2)1", "poly(cover_litter, 2)2",
-                                                             "grazing_intencity", "mowing1", "model"))) %>%
-            arrange(Effect),
-          file = "results/partial_R2_M2_gamma_ENSPIE.csv")
-
-
-
-
-
-R_ENSPIE <- R1_ENSPIE %>% 
-  bind_rows(R2_ENSPIE %>%
-              filter(Effect=="poly(Prec_Varieb, 2)1" | Effect=="poly(Prec_Varieb, 2)2")) %>%
-  filter(!Effect=="Model") 
+R_ENSPIE <- R2_ENSPIE %>%
+  filter(Effect=="poly(Prec_Varieb, 2)1" | Effect=="poly(Prec_Varieb, 2)2" | 
+           Effect=="Model") %>% 
+  bind_rows(R1_ENSPIE %>% filter(!Effect=="Model")) 
 
 write.csv(R_ENSPIE,  file = "results/R2_gamma_ENSPIE.csv")
 

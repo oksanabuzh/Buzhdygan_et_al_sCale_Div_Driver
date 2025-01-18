@@ -1,4 +1,4 @@
-# Purpose: Analysis for the 10-m2 plots (alpha diversity)
+# Purpose: GLMM analysis for the 10-m2 plots (alpha diversity)
 
 
 # libraries----
