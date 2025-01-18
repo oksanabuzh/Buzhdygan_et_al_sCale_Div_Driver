@@ -12,7 +12,7 @@ library(patchwork)
 alpha_st.eff <-read.csv ("results/alpha_st.eff.csv")%>% rename(P_sign="X.1") %>% select(-X,  -P.Value, -P_sign) 
 gamma_st.eff <-read.csv ("results/gamma_st.eff.csv") %>% rename(P_sign="X.1")%>% select(-X,  -P.Value, -P_sign) 
 
-
+# prepare data
 alpha <- alpha_st.eff %>% 
   rename(alpha.st.est="Std.Estimate") %>% 
   mutate(Measure=dplyr::recode(Response, 
@@ -29,6 +29,7 @@ gamma <- gamma_st.eff %>%
 
 alpha    
 gamma
+
 
 # Bind datasets
 Difference <-   bind_rows(alpha=alpha, gamma=gamma, .id="scale") %>% 
@@ -71,7 +72,7 @@ plot <- ggplot(Difference, aes(y = Driver, x = St.est, fill = scale)) +
                                "gamma"= "#D6604D"))+
   theme_bw()
 plot
-ggsave("plot.png", plot, width = 10, height = 5, units = "in", dpi = 300)
+# ggsave("plot.png", plot, width = 10, height = 5, units = "in", dpi = 300)
 
 
 

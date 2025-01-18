@@ -1,5 +1,4 @@
-# Purpose: Analysis for among-subplot dissimilarity in species composition
-# and spatial aggregation
+# Purpose: Analysis for spatial aggregation
 
 # libraries----
 library(tidyverse)
@@ -14,12 +13,25 @@ library(patchwork)
 
 # prepare data----
 
+# "data/alpha_beta_gamma_community_variabl.csv" combines all diversity measures and plant cover
+# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots, 
+## thus "series" (i.e. 100m2 plots), nested in dataset (separate vegetation survey campaign) 
+## are fitted as a random effect
+# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the 10m2 plots)
+# beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
+
+## SR - species richness
+## ENSPIE - evenness measure calculated as inverse Simpson using species cover
+## cover - is cumulative plant cover
+
+
 # "data/climate_PCA.csv" contains scores for the compound climate variable, 
 # derived from the PCA analysis in "1_prepare_data/ PCA_environment.R"
 
 # "data/Environm_variabl.csv" contains all environmental data
 
-bray_curtis<- read_csv("data/aggregation.csv") 
+
+aggregation <- read_csv("data/aggregation.csv") 
 
 climate_PCA <- read.csv("data/climate_PCA.csv")
 
@@ -32,6 +44,8 @@ header <- read_csv("data/Environm_variabl.csv") %>%
 str(header) 
 names (header)
 
+# Take mean across two subplots for the purpose of plotting:
+# plot on a mean alpha per series to omit pseudo-replication of the plots on the figure:
 
 header_mean <- header %>% 
   select(c(series, lat, lon, zonality, habitat_broad, 
@@ -72,24 +86,16 @@ beta_data <- beta_gamma %>%
   mutate(habitat =fct_relevel(habitat_broad, c("saline", "complex", "dry", 
                                                "wet" , "mesic", "fringe", "alpine"))) %>% 
   drop_na %>%
-  left_join(aggr, by = join_by(series)) %>%
-  left_join(bray_curtis, by = join_by(series)) %>%
-  mutate(aggreg=mean_corner_diff*sd_corner_diff,
-         BRAY_tn = beta.BRAY.BAL, 
-         BRAY_nest = beta.BRAY.GRA, 
-         BRAY_dissiml = beta.BRAY)
+  left_join(aggregation, by = join_by(series)) %>%
+  rename(aggregation = beta.BRAY.BAL)
 
 str(beta_data)
 summary(beta_data)
 
 
 beta_data  %>% 
-  select(gamma_100_div, gamma_100_ENSPIE, gamma_100_cover,,
-         beta_100_div, beta_100_ENSPIE,
-         mean_corner_diff, # mean value of between-subplot differences in cover among species 
-         sd_corner_diff,   # sd value of between-subplot differences in cover among species
-         aggreg,
-         beta.BRAY.BAL, beta.BRAY.GRA, beta.BRAY ) %>% 
+  dplyr::select(gamma_100_div, gamma_100_ENSPIE, gamma_100_cover,,
+         beta_100_div, beta_100_ENSPIE, aggregation) %>% 
  # rename(SR=sowndiv, "FG richness"=numfg) %>% 
   cor() |>
   ggcorrplot::ggcorrplot(
@@ -101,104 +107,12 @@ beta_data  %>%
 
 
 
-
-
-
-
-### Simulate data to check indices --------
-
-sp1 <-c(2, 14)
-sp2 <-c(15, 1)
-sp3 <-c(0, 2)
-
-sim_dat <- tibble(sp1, sp2, sp3) 
-sim_dat
-
-betapart::beta.pair(sim_dat %>% 
-                      mutate_at(1:3, ~ replace(., . > 0, 1)),
-                    index.family = "jaccard")|>
-  as_tibble() %>% 
- rename(Jaccard_tn = beta.jtu,
-        Jaccard_nest = beta.jne,
-        Jaccard_dissiml = beta.jac)
-
-betapart::beta.multi.abund(sim_dat, index.family = "bray")|>
-  as_tibble() %>% 
-  rename(BRAY_tn = beta.BRAY.BAL,  # balanced variation in abundance, 
-# whereby the individuals of some species in one site 
-# are substituted by the same number of individuals of different species in another site
-BRAY_nest = beta.BRAY.GRA,  # some individuals are lost from one site to the other
-BRAY_dissiml = beta.BRAY)
-
-sim_dat
-
-
-# 2) 
-sp1 <-c(1, 13)
-sp2 <-c(13, 1)
-sp3 <-c(0, 14)
-sp4 <-c(14, 0)
-
-sim_dat <- tibble(sp1, sp2, sp3, sp4) 
-sim_dat
-
-betapart::beta.pair(sim_dat %>% 
-                      mutate_at(1:4, ~ replace(., . > 0, 1)),
-                    index.family = "jaccard")|>
-  as_tibble() %>% 
-  rename(Jaccard_tn = beta.jtu,
-         Jaccard_nest = beta.jne,
-         Jaccard_dissiml = beta.jac)
-
-betapart::beta.multi.abund(sim_dat, index.family = "bray")|>
-  as_tibble() %>% 
-  rename(BRAY_tn = beta.BRAY.BAL,  # balanced variation in abundance, 
-         # whereby the individuals of some species in one site 
-         # are substituted by the same number of individuals of different species in another site
-         BRAY_nest = beta.BRAY.GRA,  # some individuals are lost from one site to the other
-         BRAY_dissiml = beta.BRAY)
-
-sim_dat
-
-
-# 3) 
-sp1 <-c(1, 13)
-sp2 <-c(13, 1)
-sp3 <-c(0, 15)
-sp4 <-c(15, 0)
-sp5 <-c(0, 1)
-sim_dat <- tibble(sp1, sp2, sp3, sp4, sp5) 
-sim_dat
-
-betapart::beta.pair(sim_dat %>% 
-                      mutate_at(1:5, ~ replace(., . > 0, 1)),
-                    index.family = "jaccard")|>
-  as_tibble() %>% 
-  rename(Jaccard_tn = beta.jtu,
-         Jaccard_nest = beta.jne,
-         Jaccard_dissiml = beta.jac)
-
-betapart::beta.multi.abund(sim_dat, index.family = "bray")|>
-  as_tibble() %>% 
-  rename(BRAY_tn = beta.BRAY.BAL,  # balanced variation in abundance, 
-         # whereby the individuals of some species in one site 
-         # are substituted by the same number of individuals of different species in another site
-         BRAY_nest = beta.BRAY.GRA,  # some individuals are lost from one site to the other
-         BRAY_dissiml = beta.BRAY)
-
-sim_dat
-
-
-
-
-# (1) aggregation -------
-
 # GLLM----
 
 ## Exploration----
 
 # Check the model:
-m <- lmer(BRAY_tn ~ 
+m <- lmer(aggregation ~ 
                    poly(pca1_clima, 2) +
                    poly(pH, 2) +
                    poly(Corg_percent,2)+
@@ -222,14 +136,14 @@ Anova(m)
 # poly(pca1_clima, 2) 
 # poly(pH, 2) is marginal
 
-m1_1 <- lmer(BRAY_tn ~  poly(pca1_clima, 2) +
+m1_1 <- lmer(aggregation ~  poly(pca1_clima, 2) +
                       pH +
                      Corg_percent +
                       poly(cover_litter,2) +
                       grazing_intencity + mowing +
                       (1|dataset),  data = beta_data)
 
-m1_2 <- lmer(BRAY_tn ~ pca1_clima +
+m1_2 <- lmer(aggregation ~ pca1_clima +
                pH +
                Corg_percent +
                poly(cover_litter,2) +
@@ -237,7 +151,7 @@ m1_2 <- lmer(BRAY_tn ~ pca1_clima +
                (1|dataset),  data = beta_data)
 
 
-m1_3 <- lmer(BRAY_tn ~  poly(pca1_clima, 2) +
+m1_3 <- lmer(aggregation ~  poly(pca1_clima, 2) +
                       pH +
                       Corg_percent +
                       cover_litter +
@@ -245,7 +159,7 @@ m1_3 <- lmer(BRAY_tn ~  poly(pca1_clima, 2) +
                       (1|dataset),  data = beta_data)
 
 
-m1_4 <- lmer(BRAY_tn ~ 
+m1_4 <- lmer(aggregation ~ 
                pca1_clima +
                pH +
                Corg_percent +
@@ -266,7 +180,7 @@ Anova(m1_1 )
 # Model 2: Add Prec_Varieb ----
 
 ### Model selection -----
-m2_1 <- lmer(BRAY_tn ~ 
+m2_1 <- lmer(aggregation ~ 
                poly(pca1_clima, 2) +
                poly(Prec_Varieb,2) +
                pH +
@@ -276,7 +190,7 @@ m2_1 <- lmer(BRAY_tn ~
                (1|dataset),  data = beta_data)
 
 
-m2_2 <- lmer(BRAY_tn ~ 
+m2_2 <- lmer(aggregation ~ 
                poly(pca1_clima, 2) +
                Prec_Varieb +
                pH +
@@ -296,18 +210,19 @@ Anova(m2_1)
 
 
 
-## -> Additional analysis (requested by reviewer) -----
-# Comment "I am unsure if you can conclude that the precipitation variability 
-# effect is shown. Perhaps you just repeat the hump-shape pattern of the environmental gradient. 
-# Maybe you can compare if models, where you have both linear and quadratic terms of climate, 
-# differ from those where the quadratic term of climate is replaced by precipitation variability. 
-# If the latter model is better (e.g. AIC is smaller than two units), you have more support for this claim."
+### -> Additional analysis for precipitation CV effects  -----
+# Analysis whether precipitation variability adds explanatory power beyond the 
+# nonlinear effect of the climate gradient:
+# Model m3_1 includes both linear and quadratic terms for the climate gradient. 
+# Model m3_2 includes the linear effects of both climate gradient and 
+# precipitation variability (i.e., the quadratic term for the climate gradient was replaced by precipitation variability).
+# If the latter model is better (e.g. AIC is smaller than two units), we have more support for claim that the precipitation variability effect is shown.
 
-m3_1  <- lmer(BRAY_tn ~ 
+m3_1  <- lmer(aggregation ~ 
                       poly(pca1_clima, 2) +
                       (1|dataset),  data = beta_data)
 
-m3_2  <- lmer(BRAY_tn ~ 
+m3_2  <- lmer(aggregation ~ 
                       pca1_clima +
                       Prec_Varieb +
                       (1|dataset),  data = beta_data)
@@ -339,7 +254,7 @@ clima_pred_beta_aggr
 
 Fig.betaaggr_clima <- ggplot(clima_pred_beta_aggr, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1)+
-  geom_point(data=beta_data, aes(pca1_clima, BRAY_tn, fill = habitat, col=habitat), size=1, alpha=0.8, pch=21)+
+  geom_point(data=beta_data, aes(pca1_clima, aggregation, fill = habitat, col=habitat), size=1, alpha=0.8, pch=21)+
   scale_fill_manual(values = col)+  scale_color_manual(values = col)  +  
   labs(y="Species aggregation", x='Climate gradient')+ 
   geom_line(linetype=1, size=1, col="black") 
@@ -361,7 +276,7 @@ Humus_pred_beta_aggr
 
 Fig.betaaggr_soilC <- ggplot(Humus_pred_beta_aggr, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1)+
-  geom_point(data=beta_data, aes(Corg_percent, BRAY_tn, fill = habitat, col=habitat), size=1, alpha=0.8, pch=21)+
+  geom_point(data=beta_data, aes(Corg_percent, aggregation, fill = habitat, col=habitat), size=1, alpha=0.8, pch=21)+
   scale_fill_manual(values = col)+  scale_color_manual(values = col)  +  
   labs(y="Species aggregation", x='Soil C')+ 
   geom_line(linetype=5, size=0.5, col="black") 
@@ -375,7 +290,7 @@ Litter_pred_beta_aggr
 
 Fig.betaaggr_Litter <- ggplot(Litter_pred_beta_aggr, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1)+
-  geom_point(data=beta_data, aes(cover_litter, BRAY_tn, fill = habitat, col=habitat), size=1, alpha=0.8, pch=21)+
+  geom_point(data=beta_data, aes(cover_litter, aggregation, fill = habitat, col=habitat), size=1, alpha=0.8, pch=21)+
   scale_fill_manual(values = col)+  scale_color_manual(values = col)  +  
   labs(y="Species aggregation", x='Litter cover')+ 
   geom_line(linetype=1, size=1, col="black") 
@@ -388,7 +303,7 @@ pH_pred_beta_aggr
 
 Fig.betaaggr_soil.pH <- ggplot(pH_pred_beta_aggr, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1)+
-  geom_point(data=beta_data, aes(pH, BRAY_tn, fill = habitat, col=habitat), size=1, alpha=0.8, pch=21)+
+  geom_point(data=beta_data, aes(pH, aggregation, fill = habitat, col=habitat), size=1, alpha=0.8, pch=21)+
   scale_fill_manual(values = col)+  scale_color_manual(values = col)  +  
   labs(y="Species aggregation", x='Soil pH')+ 
   geom_line(linetype=5, size=0.5, col="black") 
@@ -403,7 +318,7 @@ grazing_pred_beta_aggr
 
 Fig.betaaggr_grazing <- ggplot(grazing_pred_beta_aggr, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1)+
-  geom_point(data=beta_data, aes(grazing_intencity, BRAY_tn, 
+  geom_point(data=beta_data, aes(grazing_intencity, aggregation, 
                                  fill = habitat, col=habitat), 
              size=1, alpha=0.8, pch=21,
              position=position_jitter(w=0.2))+
@@ -419,7 +334,7 @@ Fig.betaaggr_grazing
 plot_model(m1_1,type = "pred", terms="mowing",  show.data=T,
            title = "", line.size=0.5)
 
-Fig.betaaggr_mowing <-ggplot(beta_data, aes(mowing, BRAY_tn)) + 
+Fig.betaaggr_mowing <-ggplot(beta_data, aes(mowing, aggregation)) + 
   geom_boxplot(color="black")+
   labs(y="Species aggregation", x='Mowing')+ 
   geom_point(aes(color = habitat, fill = habitat), pch=21, position=position_jitter(w=0.1), size=3, alpha=0.8)+
@@ -435,7 +350,7 @@ precipCV_pred_beta_aggr
 
 Fig.betaaggr_precip.CV <- ggplot(precipCV_pred_beta_aggr, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1)+
-  geom_point(data=beta_data, aes(Prec_Varieb, BRAY_tn, fill = habitat, col=habitat), size=1, alpha=0.8, pch=21)+
+  geom_point(data=beta_data, aes(Prec_Varieb, aggregation, fill = habitat, col=habitat), size=1, alpha=0.8, pch=21)+
   scale_fill_manual(values = col)+  scale_color_manual(values = col)  +  
   labs(y="Species aggregation", x='Precipitation CV')+ 
   geom_line(linetype=5, size=0.5, col="black") 
