@@ -1,4 +1,6 @@
-# Purpose: Descriptive and summary statistics
+# Purpose: Descriptive and summary statistics, 
+#          generate Fig. 1 b,c;  Fig. S1 a-b; Fig. S2 a-d; 
+#                   Fig. S3 a,b,c,d; Fig. S4 a,b; Fig. S7.
 
 # packages -----
 library(tidyverse)
@@ -129,15 +131,12 @@ alpha_gamma <- a %>%
 
 str(alpha_gamma)
 
-## data-beta ----
-
-# Remove NAs 
+## data for beta ----
 
 beta_data <- beta_gamma %>% 
   dplyr::select(beta_100_div, beta_100_ENSPIE, 
                 pca1_clima, 
                 grazing_intencity, mowing, 
-                # cover_shrub_total,     inclination, 
                 cover_litter,
                 BIO7, BIO15,
                 pH, Corg_percent,
@@ -145,13 +144,12 @@ beta_data <- beta_gamma %>%
   mutate(Tem_range = BIO7,
          Prec_Varieb = BIO15,
          mowing=factor(mowing)) %>% 
-  mutate(habitat =fct_relevel(habitat_broad, c("saline", "complex", "dry", 
-                                               "wet" , "mesic", "fringe", "alpine"))) %>% 
+  mutate(habitat =fct_relevel(habitat_broad, 
+                              c("saline", "complex", "dry",
+                                "wet" , "mesic", "fringe", "alpine"))) %>% 
   drop_na
 
 str(beta_data)
-
-
 
 
 # Descriptive statistics----
@@ -161,7 +159,7 @@ gamma_data %>%
   count(zonality) %>% 
   mutate(pr=n/sum(n)*100)
 
-## Plot SR for each scale and habitata ----
+## Plot SR for each scale and habitat ----
 # Fig. 1 b -----
 
 #         saline    complex       dry       wet       mesic        fringe       alpine
@@ -180,10 +178,23 @@ labs(y="Species richness", x='Grassland habitat type',
      color="Habitat", shape="Scale")+
   theme_bw()
 
-# Zonal/Azonal
+#Fig. 1 c ----
+
+ggplot(beta_data, aes(habitat, beta_100_div, color=habitat))+
+  geom_point(aes( col=habitat),
+             size=2, alpha=0.9,
+             position=position_jitterdodge(jitter.width = 1.4, 
+                                           jitter.height = 0)) +
+  geom_boxplot(alpha=0, lwd=0.6, outlier.shape = NA)+
+  stat_boxplot(geom ='errorbar', width = 0.5) +
+  scale_fill_manual(values = col)+  scale_color_manual(values = col) +   
+  
+  labs(y="", x='Grassland habitat type', 
+       color="Habitat")+
+  theme_bw()
 
 # Fig. S7 ----
-
+# Zonal/Azonal
         
 ggplot(gamma_data, aes(habitat, gamma_100_div, group_by=zonality, color=habitat))+
   geom_point(aes(shape=zonality, col=habitat),
@@ -198,23 +209,6 @@ ggplot(gamma_data, aes(habitat, gamma_100_div, group_by=zonality, color=habitat)
        color="Habitat", shape="Zonality ")+
   theme_bw()
 
-
-
-
-#Fg. S7b 
-
-ggplot(beta_data, aes(habitat, beta_100_div, color=habitat))+
-  geom_point(aes( col=habitat),
-             size=2, alpha=0.9,
-             position=position_jitterdodge(jitter.width = 1.4, 
-                                           jitter.height = 0)) +
-  geom_boxplot(alpha=0, lwd=0.6, outlier.shape = NA)+
-  stat_boxplot(geom ='errorbar', width = 0.5) +
-  scale_fill_manual(values = col)+  scale_color_manual(values = col) +   
-
-  labs(y="", x='Grassland habitat type', 
-       color="Habitat")+
-  theme_bw()
 
 ## Plot SR for each scale ----
 # Fig. S3 a ----
@@ -304,7 +298,7 @@ ggplot(model_R2_all %>% filter(measure=="ENSPIE"),
   theme_bw()
 
 
-# Climate variables----
+# Climate variables ----
 ## Correlation among Temperature and precipitation ----
 
 m1 <- lm (log(Precipt) ~ Temprt, data = gamma_data)
@@ -335,10 +329,10 @@ plot_model(m1,type = "pred", terms="Temprt",# show.data=F,
 Temp <-get_model_data(m1,type = "pred", terms="Temprt")
 Temp
 
-clima_pred_10m$x
-clima_pred_10m$predicted
-clima_pred_10m$conf.low
-clima_pred_10m$conf.high
+Temp$x
+Temp$predicted
+Temp$conf.low
+Temp$conf.high
 
 # Fig. S1 a -----
 
@@ -368,7 +362,7 @@ par(mfrow = c(2, 2))
 plot(m2) 
 par(mfrow = c(1, 1))
 
-Anova(m2)
+car::Anova(m2)
 summary(m2)
 
 
@@ -398,7 +392,7 @@ par(mfrow = c(2, 2))
 plot(m3) 
 par(mfrow = c(1, 1))
 
-Anova(m3)
+car::Anova(m3)
 summary(m3)
 
 
@@ -429,7 +423,7 @@ par(mfrow = c(2, 2))
 plot(m4) 
 par(mfrow = c(1, 1))
 
-Anova(m4)
+car::Anova(m4)
 summary(m4)
 
 
@@ -462,7 +456,7 @@ par(mfrow = c(2, 2))
 plot(m5) 
 par(mfrow = c(1, 1))
 
-Anova(m5)
+car::Anova(m5)
 summary(m5)
 
 
@@ -493,7 +487,7 @@ par(mfrow = c(2, 2))
 plot(m6) 
 par(mfrow = c(1, 1))
 
-Anova(m6)
+car::Anova(m6)
 summary(m6)
 
 
@@ -516,15 +510,16 @@ Fig.Corg
 # Plant cover -----
 
 # alpha scale
-tot_cover_10 <- read_csv ("data/species_matrix_total.csv") %>% 
-  filter(scale==10) %>% 
-  rowwise() %>% 
-  mutate(total_cover_10 = sum(c_across("Abietinella abietina":"Tribulus terrestris"), na.rm = T))%>%
-  ungroup() %>% 
+
+tot_cover_10 <- read_csv ("data/alpha_beta_gamma_community_variabl.csv") %>% 
+  filter(scale==10 &
+           metric=="cover") %>% 
+  rename(total_cover_10=value) %>% 
   select(dataset, series, subplot, total_cover_10)  %>% 
   mutate(dataset=factor(dataset))
 
 str(alpha_data)
+
 alpha_data_cover <- alpha_data %>%
   left_join(tot_cover_10, by=c("dataset", "series", "subplot"))
 
@@ -533,13 +528,13 @@ str(alpha_data_cover)
 
 # gamma scale
 
-tot_cover_100 <- read_csv ("data/species_matrix_total.csv") %>% 
-  filter(scale==100) %>% 
-  rowwise() %>% 
-  mutate(total_cover_100 = sum(c_across("Abietinella abietina":"Tribulus terrestris"), na.rm = T))%>%
-  ungroup() %>% 
-  select(dataset, series, total_cover_100)  %>% 
+tot_cover_100 <- read_csv ("data/alpha_beta_gamma_community_variabl.csv") %>% 
+  filter(scale==100 &
+           metric=="cover") %>% 
+  rename(total_cover_100=value) %>% 
+  select(dataset, series, subplot, total_cover_100)  %>% 
   mutate(dataset=factor(dataset))
+
 
 gamma_data_cover <- gamma_data %>%
   left_join(tot_cover_100, by=c("dataset", "series"))
@@ -559,7 +554,7 @@ sum(residuals(m7, type = "pearson")^2) / df.residual(m7)
 check_overdispersion(m7)
 
 
-Anova(m7)
+car::Anova(m7)
 summary(m7)
 
 
@@ -651,8 +646,6 @@ m9 <- lmer (beta_100_div ~
 
 betaSR_PlantCover <-get_model_data(m9,type = "pred", terms="total_cover_100[7.122:221, by=.001]")
 betaSR_PlantCover
-
-# Fig. S4 c -----
 
 Fig.betaSR_PlantCover <- ggplot(betaSR_PlantCover, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
