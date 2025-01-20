@@ -1,6 +1,5 @@
 # Purpose: GLMM analysis for the 10-m2 plots (alpha diversity)
 
-
 # load libraries -------------------------------------------------------------
 library(tidyverse)
 library(lme4)
@@ -11,7 +10,6 @@ library(sjPlot)
 library(patchwork)
 
 # Define habitat colors to be used in all plots to distinguish habitats
-# define habitat colors
 habitat_colors = c(
   saline = "#4e3910",
   complex = "#CC6600",
@@ -21,38 +19,40 @@ habitat_colors = c(
   fringe = "#00B200",
   alpine = "#006600")
 
+# Set theme for the model plots
+set_theme(base = theme_bw(),
+  axis.textsize.x = 1,
+  axis.textsize.y = 1,
+  axis.textcolor = "black",
+  axis.title.color = "black",
+  axis.title.size = 1.4,
+  legend.pos = "None",
+  geom.linetype = 2)
 
 # Read and prepare data -------------------------------------------------------
 
+# SR - species richness
+# ENSPIE - evenness measure calculated as inverse Simpson using species cover
+# cover - is cumulative plant cover
+
 # "data/alpha_beta_gamma_community_variabl.csv" combines all diversity measures and plant cover
 # alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots,
-## thus "series" (i.e. 100m2 plots), nested in dataset (separate vegetation survey campaign)
-## are fitted as a random effect
+# thus "series" (i.e. 100m2 plots), nested in dataset (separate vegetation survey campaign)
+# are fitted as a random effect
 # gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the 10m2 plots)
 # beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
 
-## SR - species richness
-## ENSPIE - evenness measure calculated as inverse Simpson using species cover
-## cover - is cumulative plant cover
-
-
-# "data/climate_PCA.csv" contains scores for the compound climate variable,
-# derived from the PCA analysis in "1_prepare_data/ PCA_environment.R"
-
-# "data/Environm_variabl.csv" contains all environmental data
-
+# Read climate data and compund climate variable from PCA analysis in "1_prepare_data/ PCA_environment.R"
 climate_PCA <- read_csv("data/climate_PCA.csv")
 
+# Read all environmental data
 header <- read_csv("data/Environm_variabl.csv") %>%
   full_join(
     read.csv("data/climate_PCA.csv"),
     by = "series"
   )
 
-str(header)
-names(header)
-
-# prepare subset of data for alpha scale (10-m2 plots)
+# Prepare subset of data for alpha scale (10 m2 plots) -------------------------
 
 alpha <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   filter(type == "alpha") %>%
@@ -64,11 +64,6 @@ alpha <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   mutate(dataset = factor(dataset))
 
 str(alpha)
-names(alpha)
-
-# dataset is a separate vegetation survey campaign
-alpha$dataset
-
 
 # Remove NAs and select only needed variables
 alpha_data <- alpha %>%
@@ -88,8 +83,6 @@ alpha_data <- alpha %>%
   drop_na()
 
 str(alpha_data)
-alpha_data$dataset
-
 
 # Start Analysis -------------------------------------------------------------
 
@@ -97,21 +90,11 @@ alpha_data$dataset
 # (1) Species richness -------------------------------------------------------
 # ----------------------------------------------------------------------------#
 
-##  Data Exploration----
+# Data Exploration -----------------------------------------------------------
 # Take mean across two subplots for the purpose of plotting:
-# plot on a mean alpha per series to omit pseudo-replication of the plots on the figure:
+# plot mean alpha per series to omit pseudo-replication of the plots in figure:
+# todo: Here you don't actually take the mean! Is this in the paper like this?
 alpha_mean <- alpha_data %>%
-  dplyr::select(alpha_10_div, alpha_10_ENSPIE,
-    pca1_clima,
-    grazing_intencity, mowing,
-    cover_litter,
-    BIO7, BIO15,
-    pH, Corg_percent,
-    dataset, series, habitat_broad) %>%
-  #  Data Exploration -----------------------------------------------------------
-  # Take mean across two subplots for the purpose of plotting:
-  # plot on a mean alpha per series to omit pseudoreplication of the plots on the figure:
-  alpha_mean <- alpha_data %>%
   dplyr::select(alpha_10_div, alpha_10_ENSPIE,
     pca1_clima,
     grazing_intencity, mowing,
@@ -129,28 +112,36 @@ alpha_mean <- alpha_data %>%
 str(alpha_mean)
 
 # Plot alpha diversity against environmental variables ------------------------
+# todo: Do we need the data exploration plots as they are later also done together with
+# the models?
 ggplot(alpha_mean, aes(pca1_clima, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(Prec_Varieb, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(pca1_clima, Prec_Varieb)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(cover_litter, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(pH, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(Corg_percent, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(grazing_intencity, alpha_10_div)) +
@@ -166,7 +157,7 @@ ggplot(alpha_mean, aes(mowing, alpha_10_div)) +
 
 # GLLM analyses ----------------------------------------------------------------
 
-### Exploration----
+# Exploration ------------------------------------------------------------------
 
 m <- glmer(alpha_10_div ~
   poly(pca1_clima, 2) +
@@ -180,7 +171,7 @@ family = "poisson", data = alpha_data)
 
 check_convergence(m)
 
-# check model
+# check model assumptions
 plot(m)
 qqnorm(resid(m))
 qqline(resid(m))
@@ -196,7 +187,7 @@ summary(m)
 
 # R2 for the entire model
 # R2m and R2c are marginal (for fixed predictors) and
-## conditional (for fixed and random predictors) coefficients of determination
+# conditional (for fixed and random predictors) coefficients of determination
 MuMIn::r.squaredGLMM(m)
 
 # Partial R2 for fixed effects
@@ -208,6 +199,7 @@ r2glmm::r2beta(m, partial = T, data = alpha_data)
 ranef(m) # not zeros
 hist(ranef(m)$`series:dataset`[, 1])
 
+# Model 1: Random effects for series nested in dataset
 RE_m1 <- glmer(alpha_10_div ~
   poly(pca1_clima, 2) +
   poly(Corg_percent, 2) +
@@ -217,6 +209,7 @@ RE_m1 <- glmer(alpha_10_div ~
   (1 | dataset / series),
 family = "poisson", data = alpha_data)
 
+# Model 2: Random effects for dataset (otherwise same as Model 1)
 RE_m2 <- glmer(alpha_10_div ~
   poly(pca1_clima, 2) +
   poly(Corg_percent, 2) +
@@ -226,9 +219,10 @@ RE_m2 <- glmer(alpha_10_div ~
   (1 | dataset),
 family = "poisson", data = alpha_data)
 
-anova(RE_m1, RE_m2)
+# Which of the two models is better?
 # RE_m1 significantly differ from RE_m2, thus we should add series nested in dataset
 # as a random effect
+anova(RE_m1, RE_m2)
 
 
 # Model 1: all predictors (except precipitation CV) ----------------------------
@@ -261,7 +255,6 @@ m1_3 <- glmer(alpha_10_div ~
   grazing_intencity + mowing +
   (1 | dataset / series), family = "poisson", data = alpha_data)
 
-
 m1_4 <- glmer(alpha_10_div ~
   pca1_clima +
   poly(Corg_percent, 2) +
@@ -271,12 +264,12 @@ m1_4 <- glmer(alpha_10_div ~
   (1 | dataset / series), family = "poisson", data = alpha_data)
 
 
-# calculate and compare AIC
+# Calculate and compare AICs for the models
 AIC(m1_1, m1_2, m1_3, m1_4) %>%
   arrange(+AIC) %>%
   mutate(delta_AIC = AIC - min(AIC))
 
-# best models (within 2 units of the model with lowest AIC)
+# Explore best model (within 2 units of the model with lowest AIC)
 Anova(m1_3)
 # Anova(m1_1) # lowest AIC
 
@@ -305,16 +298,19 @@ AIC(m2_1, m2_2) %>%
   arrange(+AIC) %>%
   mutate(delta_AIC = AIC - min(AIC))
 
+# Explore best model (within 2 units of the model with lowest AIC)
 Anova(m2_1)
 # Anova(m2_2)
 
-## -> Additional analysis for precipitation CV effects  -----
+# Additional analysis for precipitation CV effects  ---------------------------
 # Analysis whether precipitation variability adds explanatory power beyond the
 # nonlinear effect of the climate gradient:
 # Model m3_1 includes both linear and quadratic terms for the climate gradient.
 # Model m3_2 includes the linear effects of both climate gradient and
-# precipitation variability (i.e., the quadratic term for the climate gradient was replaced by precipitation variability).
-# If the latter model is better (e.g. AIC is smaller than two units), we have more support for claim that the precipitation variability effect is shown.
+# precipitation variability (i.e., the quadratic term for the climate gradient
+# was replaced by precipitation variability).
+# If the latter model is better (e.g. AIC is smaller than two units),
+# we have more support for claim that the precipitation variability effect is shown.
 
 m3_1 <- glmer(alpha_10_div ~
   poly(pca1_clima, 2) +
@@ -324,8 +320,7 @@ m3_2 <- glmer(alpha_10_div ~
   pca1_clima + Prec_Varieb +
   (1 | dataset / series), family = "poisson", data = alpha_data)
 
-
-# calculate and compare AIC
+# Calculate and compare AIC
 AIC(m3_1, m3_2) %>%
   arrange(+AIC) %>%
   mutate(delta_AIC = AIC - min(AIC))
@@ -333,38 +328,32 @@ AIC(m3_1, m3_2) %>%
 Anova(m3_1)
 Anova(m3_2)
 
-# Plots----
-
-set_theme(base = theme_bw(), axis.textsize.x = 1, axis.textsize.y = 1, axis.textcolor = "black",
-  axis.title.color = "black", axis.title.size = 1.4, legend.pos = "None", geom.linetype = 2)
-
+# Plot models -----------------------------------------------------------------
 
 # Final models
 Anova(m1_3) # for all variables
 Anova(m2_1) # for precipitation variability
 
-## Clima ----
+# Climate plots ---------------------------------------------------------------
 
 # Predictions
 clima_pred_10m <- get_model_data(m1_3, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]")
 clima_pred_10m
 
-clima_pred_10m$x
-clima_pred_10m$predicted
-clima_pred_10m$conf.low
-clima_pred_10m$conf.high
-
 Fig.alphaSR_clima <- ggplot(clima_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = alpha_mean, aes(pca1_clima, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = alpha_mean,
+    aes(pca1_clima, alpha_10_div, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Climate gradient (PC)') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
 Fig.alphaSR_clima
 
 
-## Soil C ----
+# Soil C plots ----------------------------------------------------------------
 
 Humus_pred_10m <- get_model_data(m1_3, type = "pred", terms = "Corg_percent[0:9.5, by=.001]")
 Humus_pred_10m
@@ -372,101 +361,115 @@ Humus_pred_10m
 Fig.alphaSR_soilC <- ggplot(Humus_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = alpha_mean,
-    aes(Corg_percent, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+    aes(Corg_percent, alpha_10_div, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Soil C') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
 Fig.alphaSR_soilC
 
 
-## Litter % ----
+# Litter % plots --------------------------------------------------------------
 
 Litter_pred_10m <- get_model_data(m1_3, type = "pred", terms = "cover_litter[0:100, by=0.01]")
 Litter_pred_10m
 
 Fig.alphaSR_Litter <- ggplot(Litter_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = alpha_mean, aes(cover_litter, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = alpha_mean,
+    aes(cover_litter, alpha_10_div, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Litter cover') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
 Fig.alphaSR_Litter
 
-
-## Soil pH ----
+# Soil pH plots ---------------------------------------------------------------
 
 pH_pred_10m <- get_model_data(m1_1, type = "pred", terms = "pH[3.8:9, by=.001]")
 pH_pred_10m
 
 Fig.alphaSR_soil.pH <- ggplot(pH_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = alpha_mean, aes(pH, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = alpha_mean,
+    aes(pH, alpha_10_div, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Soil pH') +
   geom_line(linetype = 5, size = 0.5, col = "#64ABCE")
 
 Fig.alphaSR_soil.pH
 
+# todo: Why do we need this? It's the same plot as above right?
 plot_model(m1_1, type = "pred", terms = "pH[3.7:9, by=.001]", # show.data=F,
   title = "", line.size = 0.5) + aes(linetype = "solid") +
   labs(y = "gamma SR", x = 'Soil pH') +
   geom_point(data = alpha_data, aes(pH, alpha_10_div, color = habitat), size = 3, alpha = 0.8) +
   scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type') +
 
+# Grazing plots --------------------------------------------------------------
 
-
-## Grazing ----
-
-grazing_pred_10m <- get_model_data(m1_3, type = "pred", terms = "grazing_intencity[-0.2:3.2, by=0.01]")
+grazing_pred_10m <- get_model_data(m1_3, type = "pred",
+  terms = "grazing_intencity[-0.2:3.2, by=0.01]")
 grazing_pred_10m
 
 Fig.alphaSR_grazing <- ggplot(grazing_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = alpha_mean, aes(grazing_intencity, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = alpha_mean,
+    aes(grazing_intencity, alpha_10_div, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Grazing intencity') +
   geom_line(linetype = 5, size = 0.5, col = "#64ABCE")
 
 Fig.alphaSR_grazing
 
-
-## Mowing ----
-
+# Mowing plot -----------------------------------------------------------------
+# todo: Do we need this plot?? It's the same as below
 plot_model(m1_3, type = "pred", terms = "mowing", show.data = T,
   title = "", line.size = 0.5)
 
 Fig.alphaSR_mowing <- ggplot(alpha_mean, aes(mowing, alpha_10_div)) +
   geom_boxplot(color = "#64ABCE") +
-  geom_point(aes(color = habitat, fill = habitat), pch = 21, position = position_jitter(w = 0.1), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors) + scale_fill_manual(values = habitat_colors) +
+  geom_point(aes(color = habitat, fill = habitat),
+    pch = 21, position = position_jitter(w = 0.1), size = 3, alpha = 0.8) +
+  scale_color_manual(values = habitat_colors) +
+  scale_fill_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Mowing')
 
 Fig.alphaSR_mowing
 
 
-## Prec_Varieb ----
+# Precipitation CV plot ------------------------------------------------------
 precipCV_pred_10m <- get_model_data(m2_1, type = "pred", terms = "Prec_Varieb")
 precipCV_pred_10m
 
 Fig.alphaSR_precip.CV <- ggplot(precipCV_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = alpha_mean, aes(Prec_Varieb, alpha_10_div, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = alpha_mean,
+    aes(Prec_Varieb, alpha_10_div, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Precipitation variability') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
 Fig.alphaSR_precip.CV
 
+# todo: Why do we need this? It's just the same right?
 plot_model(m2_1, type = "pred", terms = "Prec_Varieb", #  show.data=F
   title = "", line.size = 0.5) + aes(linetype = "solid") +
   labs(y = "alpha SR ", x = 'Precipitation variability') +
   geom_point(data = alpha_mean, aes(Prec_Varieb, alpha_10_div, color = habitat), size = 3, alpha = 0.8) +
   scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type')
 
-# Plots combined ----
-# for alpha SR (10 m^2)
+# Combine all plots -----------------------------------------------------------
 
 Fig.alphaSR_clima +
   Fig.alphaSR_precip.CV +
@@ -474,18 +477,20 @@ Fig.alphaSR_clima +
   Fig.alphaSR_soil.pH +
   Fig.alphaSR_Litter +
   Fig.alphaSR_grazing +
-  plot_layout(ncol = 3)
+  plot_layout(ncol = 3,
+    guides = "collect")
 
 
-# R2 for the entire model---------
+# R2 for the entire model ----------------------------------------------------
 
 # R2m and R2c are marginal (for fixed predictors) and
 ## conditional (for fixed and random predictors) coefficients of determination
 MuMIn::r.squaredGLMM(m1_3)
 MuMIn::r.squaredGLMM(m2_1)
+
+# todo: Remove because they are not needed in the results anymore
 # write.csv(MuMIn::r.squaredGLMM(m1_3),  file = "results/Mod1_R2_alpha_SR.csv")
 # write.csv(MuMIn::r.squaredGLMM(m2_1),  file = "results/Mod2_R2_alpha_SR.csv")
-
 
 # Partial R2 for fixed effects
 Anova(m1_3) # fo all variables
@@ -504,43 +509,48 @@ R <- R2 %>%
 
 write.csv(R, file = "results/R2_alpha_SR.csv")
 
+# todo: Remove this as they are also not needed in the results anymore
 # write.csv(MuMIn::r.squaredGLMM(m1_3),  file = "results/Mod_R2_alpha_SR.csv")
 # write.csv(Anova(m1_3),  file = "results/glmer_alpha_SR.csv")
 # write.csv(coef(summary(m1_3)),  file = "results/summary_alpha_SR.csv")
 # write.csv(Anova(m2_1),  file = "results/glmer_alpha_SR_2.csv")
 # write.csv(coef(summary(m2_1)),  file = "results/summary_alpha_SR_2.csv")
 
+#-----------------------------------------------------------------------------#
+# (1) ENSPIE -------------------------------------------------------
+# ----------------------------------------------------------------------------#
 
-
-# (2) ENSPIE -----
-# Data Exploration----
-
-#         saline    complex       dry       wet       mesic        fringe       alpine
-col = c("#4e3910", "#CC6600", "#e3c28b", "#CC99FF", "#0066FF", "#00B200", "#006600")
-
-
+# Data Exploration-------------------------------------------------------------
+# todo: Do we need the data exploration plots as they are later also done together with
+# the models?
 ggplot(alpha_mean, aes(pca1_clima, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(Prec_Varieb, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(pca1_clima, Prec_Varieb)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(cover_litter, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(pH, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(Corg_percent, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
+  geom_point(size = 2, aes(color = habitat)) +
+  scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 ggplot(alpha_mean, aes(grazing_intencity, alpha_10_ENSPIE)) +
@@ -554,11 +564,9 @@ ggplot(alpha_mean, aes(mowing, alpha_10_ENSPIE)) +
   scale_color_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
+# GLLM ------------------------------------------------------------------------
 
-
-# GLLM----
-
-## Exploration----
+# Exploration -----------------------------------------------------------------
 
 m_ENSPIE <- lmer(alpha_10_ENSPIE ~
   poly(pca1_clima, 2) +
@@ -582,7 +590,7 @@ m_ENSPIE_b <- lmer(log(alpha_10_ENSPIE) ~
   grazing_intencity + mowing +
   (1 | dataset / series), data = alpha_data)
 
-plot(m_ENSPIE_b) # better
+plot(m_ENSPIE_b) # This looks much better
 qqnorm(resid(m_ENSPIE_b))
 qqline(resid(m_ENSPIE_b))
 
@@ -598,16 +606,13 @@ MuMIn::r.squaredGLMM(m_ENSPIE_b)
 # Partial R2 for fixed effects
 r2glmm::r2beta(m_ENSPIE_b, partial = T, data = alpha_data)
 
-# Model selection----
+# Model selection--------------------------------------------------------------
 
-# Model 1: all predictors (except precipitation CV)----
+# Model 1: all predictors (except precipitation CV) ---------------------------
+
 # test quadratic effects of climate, soil C, pH, and litter
 
-Anova(m_ENSPIE_b)
-
-# poly(cover_litter, 2) is marginal
-
-### Model selection -----
+# Cover litter as poly
 m1_1_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   poly(pca1_clima, 2) +
   pH +
@@ -616,6 +621,7 @@ m1_1_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   grazing_intencity + mowing +
   (1 | dataset / series), data = alpha_data)
 
+# Cover litter as linear
 m1_2_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   poly(pca1_clima, 2) +
   pH +
@@ -624,8 +630,7 @@ m1_2_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   grazing_intencity + mowing +
   (1 | dataset / series), data = alpha_data)
 
-
-
+# ph as poly
 m1_3_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   poly(pca1_clima, 2) +
   poly(pH, 2) +
@@ -634,6 +639,7 @@ m1_3_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   grazing_intencity + mowing +
   (1 | dataset / series), data = alpha_data)
 
+# ph and corg as poly
 m1_4_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   poly(pca1_clima, 2) +
   poly(pH, 2) +
@@ -643,17 +649,19 @@ m1_4_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   (1 | dataset / series), data = alpha_data)
 
 
-# calculate and compare AIC
+# Calculate and compare AIC
 AIC(m1_1_ENSPIE, m1_2_ENSPIE, m1_3_ENSPIE, m1_4_ENSPIE) %>%
   arrange(+AIC) %>%
   mutate(delta_AIC = AIC - min(AIC))
 
+# best model
 Anova(m1_1_ENSPIE)
 
-## Model 2: Add Prec_Varieb ----
+# Model 2: Add precipitation CV -----------------------------------------------
 
-### Model selection -----
+# Model selection -------------------------------------------------------------
 
+# Precipitation CV as poly
 m2_1_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   poly(pca1_clima, 2) +
   poly(Prec_Varieb, 2) +
@@ -663,7 +671,7 @@ m2_1_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   grazing_intencity + mowing +
   (1 | dataset / series), data = alpha_data)
 
-
+# Precipitation CV as linear
 m2_2_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   poly(pca1_clima, 2) +
   Prec_Varieb +
@@ -673,24 +681,22 @@ m2_2_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   grazing_intencity + mowing +
   (1 | dataset / series), data = alpha_data)
 
-
-
 # calculate and compare AIC
 AIC(m2_1_ENSPIE, m2_2_ENSPIE) %>%
   arrange(+AIC) %>%
   mutate(delta_AIC = AIC - min(AIC))
 
+# best model
 Anova(m2_1_ENSPIE)
 
-
-
-## -> Additional analysis for precipitation CV effects  -----
+# Additional analysis for precipitation CV effects  ---------------------------
 # Analysis whether precipitation variability adds explanatory power beyond the
 # nonlinear effect of the climate gradient:
 # Model m3_1_ENSPIE includes both linear and quadratic terms for the climate gradient.
 # Model m3_2_ENSPIE includes the linear effects of both climate gradient and
 # precipitation variability (i.e., the quadratic term for the climate gradient was replaced by precipitation variability).
-# If the latter model is better (e.g. AIC is smaller than two units), we have more support for claim that the precipitation variability effect is shown.
+# If the latter model is better (e.g. AIC is smaller than two units),
+# we have more support for claim that the precipitation variability effect is shown.
 
 m3_1_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   poly(pca1_clima, 2) +
@@ -710,108 +716,116 @@ Anova(m3_1_ENSPIE)
 Anova(m3_2_ENSPIE)
 
 
-# Plots----
-#         saline    complex       dry       wet       mesic        fringe       alpine
-col = c("#4e3910", "#CC6600", "#e3c28b", "#CC99FF", "#0066FF", "#00B200", "#006600")
+# Make Model plots -----------------------------------------------------------
 
-set_theme(base = theme_bw(), axis.textsize.x = 1, axis.textsize.y = 1, axis.textcolor = "black",
-  axis.title.color = "black", axis.title.size = 1.4, legend.pos = "None", geom.linetype = 2)
+
 
 # Final models
 Anova(m1_1_ENSPIE) # for all variables
 Anova(m2_1_ENSPIE) # for precipitation variability
 
-
-get_model_data(m1_1_ENSPIE, type = "pred")
-
-## Clima ----
+# Climate plot ---------------------------------------------------------------
 
 # Predictions
-clima_pred_10m_Ensp <- get_model_data(m1_1_ENSPIE, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]")
+clima_pred_10m_Ensp <- get_model_data(m1_1_ENSPIE, type = "pred",
+  terms = "pca1_clima[-1.2:4.8, by=.001]")
 clima_pred_10m_Ensp
 
 Fig.alphaENSPIE_clima <- ggplot(clima_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = alpha_mean, aes(pca1_clima, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = alpha_mean,
+    aes(pca1_clima, alpha_10_ENSPIE, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Climate gradient (PC)') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
 Fig.alphaENSPIE_clima
 
+# todo: This is the same and can be removed
 plot_model(m1_1_ENSPIE, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]", # show.data=T,
   title = "", line.size = 1) + aes(linetype = "solid") +
   labs(y = expression(paste("alpha ENS"[PIE])), x = 'Climate gradient (PC)') +
-  geom_point(data = alpha_mean, aes(pca1_clima, alpha_10_ENSPIE, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type')
+  geom_point(data = alpha_mean,
+    aes(pca1_clima, alpha_10_ENSPIE, color = habitat), size = 3, alpha = 0.8) +
+  scale_color_manual(values = habitat_colors)
 
 
-## Soil C ----
+# Soil C plot ----------------------------------------------------------------
 
-Humus_pred_10m_Ensp <- get_model_data(m1_1_ENSPIE, type = "pred", terms = "Corg_percent[0:9.5, by=.001]")
+Humus_pred_10m_Ensp <- get_model_data(m1_1_ENSPIE, type = "pred",
+  terms = "Corg_percent[0:9.5, by=.001]")
 Humus_pred_10m_Ensp
 
 Fig.alphaENSPIE_soilC <- ggplot(Humus_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = alpha_mean, aes(Corg_percent, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = alpha_mean,
+    aes(Corg_percent, alpha_10_ENSPIE, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Soil C') +
   geom_line(linetype = 5, size = 0.5, col = "#64ABCE")
 
 Fig.alphaENSPIE_soilC
 
-
-
-## Litter % ----
+# Litter % plot --------------------------------------------------------------
 Litter_pred_10m_Ensp <- get_model_data(m1_1_ENSPIE, type = "pred", terms = "cover_litter[0:100, by=0.01]")
 Litter_pred_10m_Ensp
 
 Fig.alphaENSPIE_Litter <- ggplot(Litter_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = alpha_mean, aes(cover_litter, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = alpha_mean,
+    aes(cover_litter, alpha_10_ENSPIE, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Litter cover') +
   geom_line(linetype = 1, size = 0.5, col = "#64ABCE")
 
 Fig.alphaENSPIE_Litter
 
+# todo: Remove because this is double
 plot_model(m1_1_ENSPIE, type = "pred", terms = "cover_litter[0:100, by=0.01]", # show.data=F,
   title = "", line.size = 0.5) + aes(linetype = "solid") +
   labs(y = expression(paste("alpha ENS"[PIE])), x = 'Litter cover') +
   geom_point(data = alpha_mean, aes(cover_litter, alpha_10_ENSPIE, color = habitat), size = 3, alpha = 0.8) +
   scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type') +
 
-
-
-## Soil pH ----
+# Soil pH plot ---------------------------------------------------------------
 pH_pred_10m_Ensp <- get_model_data(m1_1_ENSPIE, type = "pred", terms = "pH[3.8:9, by=.001]")
 pH_pred_10m_Ensp
 
 Fig.alphaENSPIE_soil.pH <- ggplot(pH_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = alpha_mean, aes(pH, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = alpha_mean,
+    aes(pH, alpha_10_ENSPIE, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Soil pH') +
   geom_line(linetype = 5, size = 0.5, col = "#64ABCE")
 
 Fig.alphaENSPIE_soil.pH
 
-
-## Grazing ----
+# Grazing plot ---------------------------------------------------------------
 grazing_pred_10m_Ensp <- get_model_data(m1_1_ENSPIE, type = "pred", terms = "grazing_intencity[-0.2:3.2, by=0.01]")
 grazing_pred_10m_Ensp
 
 Fig.alphaENSPIE_grazing <- ggplot(grazing_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = alpha_mean, aes(grazing_intencity, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = alpha_mean,
+    aes(grazing_intencity, alpha_10_ENSPIE, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Grazing intencity') +
   geom_line(linetype = 5, size = 0.5, col = "#64ABCE")
 
 Fig.alphaENSPIE_grazing
 
-
-## Mowing ----
+# Mowing plot ---------------------------------------------------------------
 
 plot_model(m1_1_ENSPIE, type = "pred", terms = "mowing", show.data = T,
   title = "", line.size = 0.5)
@@ -824,22 +838,23 @@ Fig.alphaENSPIE_mowing <- ggplot(alpha_mean, aes(mowing, alpha_10_ENSPIE)) +
 
 Fig.alphaENSPIE_mowing
 
-
-## Prec_Varieb ----
+# Precipitation CV plot ------------------------------------------------------
 precipCV_pred_10m_Ensp <- get_model_data(m2_1_ENSPIE, type = "pred", terms = "Prec_Varieb")
 precipCV_pred_10m_Ensp
 
 Fig.alphaENSPIE_precip.CV <- ggplot(precipCV_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = alpha_mean, aes(Prec_Varieb, alpha_10_ENSPIE, fill = habitat, col = habitat), size = 3, alpha = 0.7, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = alpha_mean,
+    aes(Prec_Varieb, alpha_10_ENSPIE, fill = habitat, col = habitat),
+    size = 3, alpha = 0.7, pch = 21) +
+  scale_fill_manual(values = habitat_colors) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Precipitation variability') +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
 Fig.alphaENSPIE_precip.CV
 
-
-## Plots combined ----
+# Plots combined -------------------------------------------------------------
 # for alpha ENSPIE (10 m^2)
 
 Fig.alphaENSPIE_clima +
@@ -848,16 +863,17 @@ Fig.alphaENSPIE_clima +
   Fig.alphaENSPIE_soil.pH +
   Fig.alphaENSPIE_Litter +
   Fig.alphaENSPIE_grazing +
-  plot_layout(ncol = 3)
+  plot_layout(ncol = 3,
+    guides = "collect")
 
-
-# R2 for the entire model---------
+# R2 for the entire model ----------------------------------------------------
 
 # R2m and R2c are marginal (for fixed predictors) and
 ## conditional (for fixed and random predictors) coefficients of determination
 MuMIn::r.squaredGLMM(m1_1_ENSPIE)
 MuMIn::r.squaredGLMM(m2_1_ENSPIE)
 
+# todo: Remove becau8se they are not needed in the results anymore
 # write.csv(MuMIn::r.squaredGLMM(m1_1_ENSPIE),  file = "results/Mod1_R2_alpha_ENSPIE.csv")
 # write.csv(MuMIn::r.squaredGLMM(m2_1_ENSPIE),  file = "results/Mod2_R2_alpha_ENSPIE.csv")
 
@@ -882,6 +898,7 @@ R_ENSPIE <- R2_ENSPIE %>%
 
 write.csv(R_ENSPIE, file = "results/R2_alpha_ENSPIE.csv")
 
+# todo: remove because not used anymore
 # write.csv(Anova(m1_1_ENSPIE),  file = "results/glmer_alpha_ENSPIE.csv")
 # write.csv(coef(summary(m1_1_ENSPIE)),  file = "results/summary_alpha_ENSPIE.csv")
 # write.csv(Anova(m2_1_ENSPIE),  file = "results/glmer_alpha_ENSPIE_2.csv")
