@@ -1,4 +1,5 @@
-# Purpose: Relationships of beta SR and beta ENSPIE with the spatial aggregation proxy
+# Purpose: Produce FIg. 5 - relationships of beta SR and beta ENSPIE
+#                           with the spatial aggregation proxy
 
 
 # libraries----
@@ -14,14 +15,25 @@ library(patchwork)
 
 # prepare data----
 
+# "data/alpha_beta_gamma_community_variabl.csv" combines all diversity measures and plant cover
+# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots,
+## thus "series" (i.e. 100m2 plots), nested in dataset (separate vegetation survey campaign)
+## are fitted as a random effect
+# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the 10m2 plots)
+# beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
+
+## SR - species richness
+## ENSPIE - evenness measure calculated as inverse Simpson using species cover
+## cover - is cumulative plant cover
+
+
 # "data/climate_PCA.csv" contains scores for the compound climate variable,
 # derived from the PCA analysis in "1_prepare_data/ PCA_environment.R"
 
 # "data/Environm_variabl.csv" contains all environmental data
 
-bray_curtis <- read_csv("data/aggregation.csv")
-# for information on bray indices see
-# https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.12693
+
+aggregation <- read_csv("data/aggregation.csv")
 
 climate_PCA <- read.csv("data/climate_PCA.csv")
 
@@ -34,6 +46,8 @@ header <- read_csv("data/Environm_variabl.csv") %>%
 str(header)
 names(header)
 
+# Take mean across two subplots for the purpose of plotting:
+# plot on a mean alpha per series to omit pseudo-replication of the plots on the figure:
 
 header_mean <- header %>%
   select(c(series, lat, lon, zonality, habitat_broad,
@@ -74,35 +88,23 @@ beta_data <- beta_gamma %>%
   mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
     "wet", "mesic", "fringe", "alpine"))) %>%
   drop_na %>%
-  left_join(bray_curtis, by = join_by(series)) %>%
-  mutate(BRAY_tn = beta.BRAY.BAL, # balanced variation in abundance,
-    # whereby the individuals of some species in one site
-    # are substituted by the same number of individuals of different species in another site
-    BRAY_nest = beta.BRAY.GRA, # some individuals are lost from one site to the other
-    BRAY_dissiml = beta.BRAY)
+  left_join(aggregation, by = join_by(series)) %>%
+  rename(aggregation = beta.BRAY.BAL)
 
 str(beta_data)
 summary(beta_data)
+
 
 
 # Correlation among measures------
 beta_data %>%
   select( # gamma_100_div, gamma_100_ENSPIE,
     beta_100_div, beta_100_ENSPIE, gamma_100_cover,
-    #  mean_corner_diff, # mean value of between-subplot differences in cover among species
-    #  sd_corner_diff,   # sd value of between-subplot differences in cover among species
-    #  aggreg,
-    BRAY_tn, # BRAY_nest, # BRAY_dissiml,
-    # Jaccard_tn, Jaccard_nest #, Jaccard_dissiml
-  ) %>%
+    aggregation) %>%
   rename("beta SR" = beta_100_div,
     "beta evenness" = beta_100_ENSPIE,
     "total plant cover" = gamma_100_cover,
-    #  "species turnover" = Jaccard_tn,
-    #   "species nestedness" = Jaccard_nest,
-    #  "Total occurance-based dissimilarity" = Jaccard_dissiml,
-    "species aggregation" = BRAY_tn) %>%
-  # rename(SR=sowndiv, "FG richness"=numfg) %>%
+    "species aggregation" = aggregation) %>%
   cor() |>
   ggcorrplot::ggcorrplot(
     lab = TRUE, type = "lower",
@@ -116,8 +118,7 @@ beta_data %>%
 beta1 <- lmer(beta_100_div ~
   poly(gamma_100_cover, 2) +
   gamma_100_ENSPIE +
-  BRAY_tn + # BRAY_nest +
-  # BRAY_dissiml +
+  aggregation +
   (1 | dataset), data = beta_data)
 
 
@@ -140,10 +141,10 @@ Fig_SR_cover <- ggplot(ggeffects::ggpredict(beta1, terms = c("gamma_100_cover"))
 
 Fig_SR_cover
 
-# BRAY_tn
-Fig_SR_aggr <- ggplot(ggeffects::ggpredict(beta1, terms = c("BRAY_tn[0:1, by=.001]")),
+# aggregation
+Fig_SR_aggr <- ggplot(ggeffects::ggpredict(beta1, terms = c("aggregation[0:1, by=.001]")),
   aes(x, predicted)) +
-  geom_point(data = beta_data, aes(BRAY_tn, beta_100_div),
+  geom_point(data = beta_data, aes(aggregation, beta_100_div),
     size = 1.5, alpha = 0.8, color = "#00AC7F", shape = 21, stroke = 0.8) +
   geom_line(size = 1, linetype = "solid") +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.15) +
@@ -164,24 +165,11 @@ Fig_SR_evenness <- ggplot(ggeffects::ggpredict(beta1, terms = c("gamma_100_ENSPI
 Fig_SR_evenness
 
 
-# BRAY_dissiml
-ggplot(ggeffects::ggpredict(beta1, terms = c("BRAY_dissiml[0:1, by=.001]")),
-  aes(x, predicted)) +
-  geom_point(data = beta_data, aes(BRAY_dissiml, beta_100_div),
-    size = 1.5, alpha = 0.8, color = "#00AC7F", shape = 21, stroke = 0.8) +
-  geom_line(size = 0.5, linetype = "longdash") +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.15) +
-  labs(y = "Beta species richness", x = 'Cover-based dissimilarity')
-
-
-
-
 
 # (2) beta ENSPIE -----
 beta_ENSPIE_1 <- lmer(beta_100_ENSPIE ~
   gamma_100_cover +
-  BRAY_tn + # BRAY_nest +
-  # BRAY_dissiml +
+  aggregation +
   (1 | dataset), data = beta_data)
 
 Anova(beta_ENSPIE_1)
@@ -201,21 +189,32 @@ ggplot(ggeffects::ggpredict(beta_ENSPIE_1, terms = c("gamma_100_cover")),
   labs(y = "Beta evenness", x = 'Total cover')
 
 
-# BRAY_dissiml
-ggplot(ggeffects::ggpredict(beta_ENSPIE_1, terms = c("BRAY_dissiml[0:1, by=.001]")),
-  aes(x, predicted)) +
-  geom_point(data = beta_data, aes(BRAY_dissiml, beta_100_ENSPIE),
-    size = 1.5, alpha = 0.8, color = "#00AC7F") +
-  geom_line(size = 1, linetype = "solid") +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.15) +
-  labs(y = "Beta evenness", x = 'Cover-based dissimilarity')
 
-
-# BRAY_tn
-ggplot(ggeffects::ggpredict(beta_ENSPIE_1, terms = c("BRAY_tn[0:1, by=.001]")),
+# aggregation
+Fig_ENSPIE_aggr <- ggplot(ggeffects::ggpredict(beta_ENSPIE_1, terms = c("aggregation[0:1, by=.001]")),
   aes(x, predicted)) +
-  geom_point(data = beta_data, aes(BRAY_tn, beta_100_ENSPIE),
+  geom_point(data = beta_data, aes(aggregation, beta_100_ENSPIE),
     size = 1.5, alpha = 0.8, color = "#00AC7F") +
   geom_line(size = 1, linetype = "solid") +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.15) +
   labs(y = "Beta evenness", x = 'Intraspecific aggregation')
+
+
+
+
+## Merge plots----
+
+library(patchwork)
+
+set_theme(base = theme_bw(), axis.textsize.x = 0.8, axis.textsize.y = 0.8, axis.textcolor = "black",
+  axis.title.color = "black", axis.title.size = 0.9, legend.pos = "None",
+  geom.linetype = 2)
+
+Fig_SR_cover +
+  Fig_SR_evenness +
+  Fig_SR_aggr + Fig_ENSPIE_aggr +
+  plot_annotation(tag_levels = 'a') +
+  plot_layout(ncol = 2) # & #ylab(NULL) &
+theme( # plot.margin = margin(3, 1, 3, 20),
+  plot.tag = element_text(size = 11, face = 'bold'),
+  plot.tag.position = c(0.25, 1.06))

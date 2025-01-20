@@ -30,6 +30,7 @@ gamma <- gamma_st.eff %>%
 alpha
 gamma
 
+
 # Bind datasets
 Difference <- bind_rows(alpha = alpha, gamma = gamma, .id = "scale") %>%
   mutate(Driver = dplyr::recode(Predictor,
@@ -71,7 +72,7 @@ plot <- ggplot(Difference, aes(y = Driver, x = St.est, fill = scale)) +
     "gamma" = "#D6604D")) +
   theme_bw()
 plot
-ggsave("plot.png", plot, width = 10, height = 5, units = "in", dpi = 300)
+# ggsave("plot.png", plot, width = 10, height = 5, units = "in", dpi = 300)
 
 
 

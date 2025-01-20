@@ -1,4 +1,4 @@
-# Purpose: Figure 2
+# Purpose: produce Figure 2
 
 # libraries----
 library(tidyverse)

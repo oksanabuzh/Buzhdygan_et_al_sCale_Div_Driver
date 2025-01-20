@@ -1,4 +1,4 @@
-# Purpose: Analysis for the 10-m2 plots (alpha diversity)
+# Purpose: GLMM analysis for the 10-m2 plots (alpha diversity)
 
 
 # load libraries -------------------------------------------------------------
@@ -97,10 +97,21 @@ alpha_data$dataset
 # (1) Species richness -------------------------------------------------------
 # ----------------------------------------------------------------------------#
 
-#  Data Exploration -----------------------------------------------------------
+##  Data Exploration----
 # Take mean across two subplots for the purpose of plotting:
-# plot on a mean alpha per series to omit pseudoreplication of the plots on the figure:
+# plot on a mean alpha per series to omit pseudo-replication of the plots on the figure:
 alpha_mean <- alpha_data %>%
+  dplyr::select(alpha_10_div, alpha_10_ENSPIE,
+    pca1_clima,
+    grazing_intencity, mowing,
+    cover_litter,
+    BIO7, BIO15,
+    pH, Corg_percent,
+    dataset, series, habitat_broad) %>%
+  #  Data Exploration -----------------------------------------------------------
+  # Take mean across two subplots for the purpose of plotting:
+  # plot on a mean alpha per series to omit pseudoreplication of the plots on the figure:
+  alpha_mean <- alpha_data %>%
   dplyr::select(alpha_10_div, alpha_10_ENSPIE,
     pca1_clima,
     grazing_intencity, mowing,
@@ -297,13 +308,13 @@ AIC(m2_1, m2_2) %>%
 Anova(m2_1)
 # Anova(m2_2)
 
-# Todo: is this in the MS or can we move it to the _for_review_only scripts??
-## -> Additional analysis (requested by reviewer) -----
-# Comment "I am unsure if you can conclude that the precipitation variability
-# effect is shown. Perhaps you just repeat the hump-shape pattern of the environmental gradient.
-# Maybe you can compare if models, where you have both linear and quadratic terms of climate,
-# differ from those where the quadratic term of climate is replaced by precipitation variability.
-# If the latter model is better (e.g. AIC is smaller than two units), you have more support for this claim."
+## -> Additional analysis for precipitation CV effects  -----
+# Analysis whether precipitation variability adds explanatory power beyond the
+# nonlinear effect of the climate gradient:
+# Model m3_1 includes both linear and quadratic terms for the climate gradient.
+# Model m3_2 includes the linear effects of both climate gradient and
+# precipitation variability (i.e., the quadratic term for the climate gradient was replaced by precipitation variability).
+# If the latter model is better (e.g. AIC is smaller than two units), we have more support for claim that the precipitation variability effect is shown.
 
 m3_1 <- glmer(alpha_10_div ~
   poly(pca1_clima, 2) +
@@ -321,9 +332,6 @@ AIC(m3_1, m3_2) %>%
 
 Anova(m3_1)
 Anova(m3_2)
-
-
-
 
 # Plots----
 
@@ -475,8 +483,8 @@ Fig.alphaSR_clima +
 ## conditional (for fixed and random predictors) coefficients of determination
 MuMIn::r.squaredGLMM(m1_3)
 MuMIn::r.squaredGLMM(m2_1)
-write.csv(MuMIn::r.squaredGLMM(m1_3), file = "results/Mod1_R2_alpha_SR.csv")
-write.csv(MuMIn::r.squaredGLMM(m2_1), file = "results/Mod2_R2_alpha_SR.csv")
+# write.csv(MuMIn::r.squaredGLMM(m1_3),  file = "results/Mod1_R2_alpha_SR.csv")
+# write.csv(MuMIn::r.squaredGLMM(m2_1),  file = "results/Mod2_R2_alpha_SR.csv")
 
 
 # Partial R2 for fixed effects
@@ -490,38 +498,17 @@ R2 <- r2glmm::r2beta(m2_1, partial = T, data = alpha_data, method = 'sgv')
 R2
 
 
-
-write.csv(R1 %>% mutate(Effect = fct_relevel(Effect, c("poly(pca1_clima, 2)1", "poly(pca1_clima, 2)2",
-  "poly(Prec_Varieb, 2)1", "poly(Prec_Varieb, 2)2",
-  "poly(Corg_percent, 2)1", "poly(Corg_percent, 2)2", "Corg_percent",
-  "poly(pH, 2)2", "poly(pH, 2)1", "pH",
-  "poly(cover_litter, 2)1", "poly(cover_litter, 2)2",
-  "grazing_intencity", "mowing1", "model"))) %>%
-  arrange(Effect),
-file = "results/partial_R2_M1_alpha_SR.csv")
-
-write.csv(R2 %>% mutate(Effect = fct_relevel(Effect, c("poly(pca1_clima, 2)1", "poly(pca1_clima, 2)2",
-  "poly(Prec_Varieb, 2)1", "poly(Prec_Varieb, 2)2",
-  "poly(Corg_percent, 2)1", "poly(Corg_percent, 2)2", "Corg_percent",
-  "poly(pH, 2)2", "poly(pH, 2)1", "pH",
-  "poly(cover_litter, 2)1", "poly(cover_litter, 2)2",
-  "grazing_intencity", "mowing1", "model"))) %>%
-  arrange(Effect),
-file = "results/partial_R2_M2_alpha_SR.csv")
-
-
-R <- R1 %>%
-  bind_rows(R2 %>%
-    filter(Effect == "poly(Prec_Varieb, 2)1" | Effect == "poly(Prec_Varieb, 2)2")) %>%
-  filter(!Effect == "Model")
+R <- R2 %>%
+  filter(Effect == "poly(Prec_Varieb, 2)1" | Effect == "poly(Prec_Varieb, 2)2" | Effect == "Model") %>%
+  bind_rows(R1 %>% filter(!Effect == "Model"))
 
 write.csv(R, file = "results/R2_alpha_SR.csv")
 
 # write.csv(MuMIn::r.squaredGLMM(m1_3),  file = "results/Mod_R2_alpha_SR.csv")
-write.csv(Anova(m1_3), file = "results/glmer_alpha_SR.csv")
-write.csv(coef(summary(m1_3)), file = "results/summary_alpha_SR.csv")
-write.csv(Anova(m2_1), file = "results/glmer_alpha_SR_2.csv")
-write.csv(coef(summary(m2_1)), file = "results/summary_alpha_SR_2.csv")
+# write.csv(Anova(m1_3),  file = "results/glmer_alpha_SR.csv")
+# write.csv(coef(summary(m1_3)),  file = "results/summary_alpha_SR.csv")
+# write.csv(Anova(m2_1),  file = "results/glmer_alpha_SR_2.csv")
+# write.csv(coef(summary(m2_1)),  file = "results/summary_alpha_SR_2.csv")
 
 
 
@@ -611,6 +598,7 @@ MuMIn::r.squaredGLMM(m_ENSPIE_b)
 # Partial R2 for fixed effects
 r2glmm::r2beta(m_ENSPIE_b, partial = T, data = alpha_data)
 
+# Model selection----
 
 # Model 1: all predictors (except precipitation CV)----
 # test quadratic effects of climate, soil C, pH, and litter
@@ -662,7 +650,7 @@ AIC(m1_1_ENSPIE, m1_2_ENSPIE, m1_3_ENSPIE, m1_4_ENSPIE) %>%
 
 Anova(m1_1_ENSPIE)
 
-# Model 2: Add Prec_Varieb ----
+## Model 2: Add Prec_Varieb ----
 
 ### Model selection -----
 
@@ -695,12 +683,14 @@ AIC(m2_1_ENSPIE, m2_2_ENSPIE) %>%
 Anova(m2_1_ENSPIE)
 
 
-## -> Additional analysis (requested by reviewer) -----
-# Comment "I am unsure if you can conclude that the precipitation variability
-# effect is shown. Perhaps you just repeat the hump-shape pattern of the environmental gradient.
-# Maybe you can compare if models, where you have both linear and quadratic terms of climate,
-# differ from those where the quadratic term of climate is replaced by precipitation variability.
-# If the latter model is better (e.g. AIC is smaller than two units), you have more support for this claim."
+
+## -> Additional analysis for precipitation CV effects  -----
+# Analysis whether precipitation variability adds explanatory power beyond the
+# nonlinear effect of the climate gradient:
+# Model m3_1_ENSPIE includes both linear and quadratic terms for the climate gradient.
+# Model m3_2_ENSPIE includes the linear effects of both climate gradient and
+# precipitation variability (i.e., the quadratic term for the climate gradient was replaced by precipitation variability).
+# If the latter model is better (e.g. AIC is smaller than two units), we have more support for claim that the precipitation variability effect is shown.
 
 m3_1_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   poly(pca1_clima, 2) +
@@ -718,7 +708,6 @@ AIC(m3_1_ENSPIE, m3_2_ENSPIE) %>%
 
 Anova(m3_1_ENSPIE)
 Anova(m3_2_ENSPIE)
-
 
 
 # Plots----
@@ -869,8 +858,8 @@ Fig.alphaENSPIE_clima +
 MuMIn::r.squaredGLMM(m1_1_ENSPIE)
 MuMIn::r.squaredGLMM(m2_1_ENSPIE)
 
-write.csv(MuMIn::r.squaredGLMM(m1_1_ENSPIE), file = "results/Mod1_R2_alpha_ENSPIE.csv")
-write.csv(MuMIn::r.squaredGLMM(m2_1_ENSPIE), file = "results/Mod2_R2_alpha_ENSPIE.csv")
+# write.csv(MuMIn::r.squaredGLMM(m1_1_ENSPIE),  file = "results/Mod1_R2_alpha_ENSPIE.csv")
+# write.csv(MuMIn::r.squaredGLMM(m2_1_ENSPIE),  file = "results/Mod2_R2_alpha_ENSPIE.csv")
 
 # Partial R2 for fixed effects
 Anova(m1_1_ENSPIE) # fo all variables
@@ -884,33 +873,16 @@ R2_ENSPIE <- r2glmm::r2beta(m2_1_ENSPIE, partial = T, data = alpha_data, method 
 R2_ENSPIE
 
 
-write.csv(R1_ENSPIE %>% mutate(Effect = fct_relevel(Effect, c("poly(pca1_clima, 2)1", "poly(pca1_clima, 2)2",
-  "poly(Prec_Varieb, 2)1", "poly(Prec_Varieb, 2)2",
-  "poly(Corg_percent, 2)1", "poly(Corg_percent, 2)2", "Corg_percent",
-  "poly(pH, 2)2", "poly(pH, 2)1", "pH",
-  "poly(cover_litter, 2)1", "poly(cover_litter, 2)2",
-  "grazing_intencity", "mowing1", "model"))) %>%
-  arrange(Effect),
-file = "results/partial_R2_M1_alpha_ENSPIE.csv")
-
-write.csv(R2_ENSPIE %>% mutate(Effect = fct_relevel(Effect, c("poly(pca1_clima, 2)1", "poly(pca1_clima, 2)2",
-  "poly(Prec_Varieb, 2)1", "poly(Prec_Varieb, 2)2",
-  "poly(Corg_percent, 2)1", "poly(Corg_percent, 2)2", "Corg_percent",
-  "poly(pH, 2)2", "poly(pH, 2)1", "pH",
-  "poly(cover_litter, 2)1", "poly(cover_litter, 2)2",
-  "grazing_intencity", "mowing1", "model"))) %>%
-  arrange(Effect),
-file = "results/partial_R2_M2_alpha_ENSPIE.csv")
-
-
-R_ENSPIE <- R1_ENSPIE %>%
-  bind_rows(R2_ENSPIE %>%
-    filter(Effect == "poly(Prec_Varieb, 2)1" | Effect == "poly(Prec_Varieb, 2)2")) %>%
-  filter(!Effect == "Model")
+R_ENSPIE <- R2_ENSPIE %>%
+  filter(Effect == "poly(Prec_Varieb, 2)1" | Effect == "poly(Prec_Varieb, 2)2" |
+    Effect == "Model") %>%
+  bind_rows(R1_ENSPIE %>%
+    filter(!Effect == "Model")
+  )
 
 write.csv(R_ENSPIE, file = "results/R2_alpha_ENSPIE.csv")
 
-write.csv(Anova(m1_1_ENSPIE), file = "results/glmer_alpha_ENSPIE.csv")
-write.csv(coef(summary(m1_1_ENSPIE)), file = "results/summary_alpha_ENSPIE.csv")
-write.csv(Anova(m2_1_ENSPIE), file = "results/glmer_alpha_ENSPIE_2.csv")
-write.csv(coef(summary(m2_1_ENSPIE)), file = "results/summary_alpha_ENSPIE_2.csv")
+# write.csv(Anova(m1_1_ENSPIE),  file = "results/glmer_alpha_ENSPIE.csv")
+# write.csv(coef(summary(m1_1_ENSPIE)),  file = "results/summary_alpha_ENSPIE.csv")
+# write.csv(Anova(m2_1_ENSPIE),  file = "results/glmer_alpha_ENSPIE_2.csv")
+# write.csv(coef(summary(m2_1_ENSPIE)),  file = "results/summary_alpha_ENSPIE_2.csv")

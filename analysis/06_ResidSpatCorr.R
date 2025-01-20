@@ -108,8 +108,8 @@ names(beta_gamma)
 # dataset is a separate vegetation survey campaign
 beta_gamma$dataset
 
-# Remove NAs
 
+# Select variables, remove NAs
 gamma_data <- beta_gamma %>%
   dplyr::select(gamma_100_div, gamma_100_ENSPIE,
     lat, lon, pca1_clima,
@@ -199,11 +199,10 @@ diag(dM_a) <- 0
 str(dM_a)
 # We have created a matrix where each off-diagonal entry [i, j] in the matrix is equal to 1/(distance between point i and point j).
 
-??predict.Mermod
 
 # (3) calculate Moran’s I (DHARMa works using ape package)
-testSpatialAutocorrelation(res.sim_alpha_m1, distMat = dM_a)
-testSpatialAutocorrelation(res.sim_alpha_m2, distMat = dM_a)
+DHARMa::testSpatialAutocorrelation(res.sim_alpha_m1, distMat = dM_a)
+DHARMa::testSpatialAutocorrelation(res.sim_alpha_m2, distMat = dM_a)
 
 #------------------------------------------------------------------------------#
 # alpha ENSPIE----
@@ -244,11 +243,9 @@ diag(dM_a) <- 0
 str(dM_a)
 # We have created a matrix where each off-diagonal entry [i, j] in the matrix is equal to 1/(distance between point i and point j).
 
-??predict.Mermod
-
 # (3) calculate Moran’s I (DHARMa works using ape package)
-testSpatialAutocorrelation(res.sim_alpha_m1_ENSPIE, distMat = dM_a)
-testSpatialAutocorrelation(res.sim_alpha_m2_ENSPIE, distMat = dM_a)
+DHARMa::testSpatialAutocorrelation(res.sim_alpha_m1_ENSPIE, distMat = dM_a)
+DHARMa::testSpatialAutocorrelation(res.sim_alpha_m2_ENSPIE, distMat = dM_a)
 
 #------------------------------------------------------------------------------#
 ###  gamma -----
