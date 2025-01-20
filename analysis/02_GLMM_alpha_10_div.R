@@ -405,13 +405,6 @@ Fig.alphaSR_soil.pH <- ggplot(pH_pred_10m, aes(x, predicted)) +
 
 Fig.alphaSR_soil.pH
 
-# todo: Why do we need this? It's the same plot as above right?
-plot_model(m1_1, type = "pred", terms = "pH[3.7:9, by=.001]", # show.data=F,
-  title = "", line.size = 0.5) + aes(linetype = "solid") +
-  labs(y = "gamma SR", x = 'Soil pH') +
-  geom_point(data = alpha_data, aes(pH, alpha_10_div, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type') +
-
 # Grazing plots --------------------------------------------------------------
 
 grazing_pred_10m <- get_model_data(m1_3, type = "pred",
@@ -431,10 +424,6 @@ Fig.alphaSR_grazing <- ggplot(grazing_pred_10m, aes(x, predicted)) +
 Fig.alphaSR_grazing
 
 # Mowing plot -----------------------------------------------------------------
-# todo: Do we need this plot?? It's the same as below
-plot_model(m1_3, type = "pred", terms = "mowing", show.data = T,
-  title = "", line.size = 0.5)
-
 Fig.alphaSR_mowing <- ggplot(alpha_mean, aes(mowing, alpha_10_div)) +
   geom_boxplot(color = "#64ABCE") +
   geom_point(aes(color = habitat, fill = habitat),
@@ -461,13 +450,6 @@ Fig.alphaSR_precip.CV <- ggplot(precipCV_pred_10m, aes(x, predicted)) +
   geom_line(linetype = 1, size = 1, col = "#64ABCE")
 
 Fig.alphaSR_precip.CV
-
-# todo: Why do we need this? It's just the same right?
-plot_model(m2_1, type = "pred", terms = "Prec_Varieb", #  show.data=F
-  title = "", line.size = 0.5) + aes(linetype = "solid") +
-  labs(y = "alpha SR ", x = 'Precipitation variability') +
-  geom_point(data = alpha_mean, aes(Prec_Varieb, alpha_10_div, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type')
 
 # Combine all plots -----------------------------------------------------------
 
@@ -743,15 +725,6 @@ Fig.alphaENSPIE_clima <- ggplot(clima_pred_10m_Ensp, aes(x, predicted)) +
 
 Fig.alphaENSPIE_clima
 
-# todo: This is the same and can be removed
-plot_model(m1_1_ENSPIE, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]", # show.data=T,
-  title = "", line.size = 1) + aes(linetype = "solid") +
-  labs(y = expression(paste("alpha ENS"[PIE])), x = 'Climate gradient (PC)') +
-  geom_point(data = alpha_mean,
-    aes(pca1_clima, alpha_10_ENSPIE, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors)
-
-
 # Soil C plot ----------------------------------------------------------------
 
 Humus_pred_10m_Ensp <- get_model_data(m1_1_ENSPIE, type = "pred",
@@ -785,13 +758,6 @@ Fig.alphaENSPIE_Litter <- ggplot(Litter_pred_10m_Ensp, aes(x, predicted)) +
   geom_line(linetype = 1, size = 0.5, col = "#64ABCE")
 
 Fig.alphaENSPIE_Litter
-
-# todo: Remove because this is double
-plot_model(m1_1_ENSPIE, type = "pred", terms = "cover_litter[0:100, by=0.01]", # show.data=F,
-  title = "", line.size = 0.5) + aes(linetype = "solid") +
-  labs(y = expression(paste("alpha ENS"[PIE])), x = 'Litter cover') +
-  geom_point(data = alpha_mean, aes(cover_litter, alpha_10_ENSPIE, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type') +
 
 # Soil pH plot ---------------------------------------------------------------
 pH_pred_10m_Ensp <- get_model_data(m1_1_ENSPIE, type = "pred", terms = "pH[3.8:9, by=.001]")

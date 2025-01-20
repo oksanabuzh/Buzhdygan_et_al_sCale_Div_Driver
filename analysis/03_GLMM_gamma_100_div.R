@@ -310,13 +310,6 @@ Fig.gammaSR_clima <- ggplot(clima_pred_100m, aes(x, predicted)) +
 
 Fig.gammaSR_clima
 
-# todo: remove because its repeated in the final model
-plot_model(m1_1, type = "pred", terms = "pca1_clima[-1.2:4.8, by=.001]", #  show.data=F
-  title = "", line.size = 1) + aes(linetype = "solid") +
-  labs(y = "gamma SR", x = 'Climate gradient (PC)') +
-  geom_point(data = gamma_data, aes(pca1_clima, gamma_100_div, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type')
-
 # Soil C plot ---------------------------------------------------------------
 Humus_pred_100m <- get_model_data(m1_1, type = "pred", terms = "Corg_percent[0:9.5, by=.001]")
 Humus_pred_100m
@@ -330,13 +323,6 @@ Fig.gammaSR_soilC <- ggplot(Humus_pred_100m, aes(x, predicted)) +
   geom_line(linetype = 1, linewidth = 1, col = "#D6604D")
 
 Fig.gammaSR_soilC
-
-# todo: remove because duplicated
-plot_model(m1_1, type = "pred", terms = "Corg_percent[0:9.5, by=.001]", # show.data=F,
-  title = "", line.size = 1) + aes(linetype = "solid") +
-  labs(y = "gamma SR", x = 'Soil C') +
-  geom_point(data = gamma_data, aes(Corg_percent, gamma_100_div, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type') +
 
 # Litter % plot ---------------------------------------------------------------
 Litter_pred_100m <- get_model_data(m1_1, type = "pred", terms = "cover_litter[0:100, by=0.01]")
@@ -354,13 +340,6 @@ Fig.gammaSR_Litter <- ggplot(Litter_pred_100m, aes(x, predicted)) +
 
 Fig.gammaSR_Litter
 
-# todo: remove because duplicated
-plot_model(m1_1, type = "pred", terms = "cover_litter[0:100, by=0.01]", # show.data=F,
-  title = "", line.size = 1) + aes(linetype = "solid") +
-  labs(y = "gamma SR", x = 'Litter cover') +
-  geom_point(data = gamma_data, aes(cover_litter, gamma_100_div, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type') +
-
 # Soil pH plot ---------------------------------------------------------------
 pH_pred_100m <- get_model_data(m1_1, type = "pred", terms = "pH[3.7:9, by=.001]")
 pH_pred_100m
@@ -374,13 +353,6 @@ Fig.gammaSR_soil.pH <- ggplot(pH_pred_100m, aes(x, predicted)) +
 
 Fig.gammaSR_soil.pH
 
-# todo: remove because duplicated
-plot_model(m1_1, type = "pred", terms = "pH[3.7:9, by=.001]", # show.data=F,
-  title = "", line.size = 0.5) + aes(linetype = "solid") +
-  labs(y = "gamma SR", x = 'Soil pH') +
-  geom_point(data = gamma_data, aes(pH, gamma_100_div, color = habitat), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type') +
-
 # Grazing plot ---------------------------------------------------------------
 grazing_pred_100m <- get_model_data(m1_1, type = "pred", terms = "grazing_intencity[-0.2:3.2, by=0.01]")
 
@@ -393,20 +365,7 @@ Fig.gammaSR_grazing <- ggplot(grazing_pred_100m, aes(x, predicted)) +
 
 Fig.gammaSR_grazing
 
-# todo: remove because duplicated
-plot_model(m1_1, type = "pred", terms = "grazing_intencity[-0.2:3.2, by=0.01]", # show.data=F,
-  title = "", line.size = 0.5) +
-  labs(y = "gamma SR", x = 'Grazing intencity') +
-  geom_point(data = gamma_data, aes(grazing_intencity, gamma_100_div, color = habitat), size = 3, alpha = 0.8,
-    position = position_jitter(w = 0.2)) +
-  scale_color_manual(values = habitat_colors) # +  labs(color='Habitat type') +
-
 # Mowing plot ---------------------------------------------------------------
-
-# todo: remove because duplicated
-plot_model(m1_1, type = "pred", terms = "mowing", show.data = T,
-  title = "", line.size = 0.5)
-
 Fig.gammaSR_mowing <- ggplot(gamma_data, aes(mowing, gamma_100_div)) +
   geom_boxplot(color = "#D6604D") +
   geom_point(aes(color = habitat, fill = habitat), pch = 21, position = position_jitter(w = 0.1), size = 3, alpha = 0.8) +
