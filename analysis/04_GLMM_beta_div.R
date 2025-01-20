@@ -94,50 +94,6 @@ beta_data <- beta_gamma %>%
 # (1) Species richness -------------------------------------------------------
 # ----------------------------------------------------------------------------#
 
-# Data Exploration -----------------------------------------------------------
-# todo: Can be removed because later same plots will be repeated with the final model
-
-ggplot(beta_data, aes(pca1_clima, beta_100_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(Prec_Varieb, beta_100_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(pca1_clima, Prec_Varieb)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(cover_litter, beta_100_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(pH, beta_100_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(Corg_percent, beta_100_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(grazing_intencity, beta_100_div)) +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.4)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(mowing, beta_100_div)) +
-  geom_boxplot() +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.1)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
 # GLLM analyses ----------------------------------------------------------------
 
 # Exploration ------------------------------------------------------------------
@@ -408,43 +364,6 @@ write.csv(R_SR, file = "results/R2_beta_SR.csv")
 # (1) ENSPIE -------------------------------------------------------
 # ----------------------------------------------------------------------------#
 
-# Data Exploration-------------------------------------------------------------
-# todo: Do we need the data exploration plots as they are later also done together with
-
-ggplot(beta_data, aes(pca1_clima, beta_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(Prec_Varieb, beta_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(pca1_clima, Prec_Varieb)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(cover_litter, beta_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(pH, beta_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(Corg_percent, beta_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) + scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(grazing_intencity, beta_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.4)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(beta_data, aes(mowing, beta_100_ENSPIE)) +
-  geom_boxplot() +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.1)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
 # GLLM ------------------------------------------------------------------------
 
 # Exploration -----------------------------------------------------------------

@@ -73,7 +73,6 @@ beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
 
 str(beta_gamma)
 
-
 # Remove NAs and select only needed variables
 gamma_data <- beta_gamma %>%
   dplyr::select(gamma_100_div, gamma_100_ENSPIE,
@@ -96,50 +95,6 @@ gamma_data <- beta_gamma %>%
 #-----------------------------------------------------------------------------#
 # (1) Species richness -------------------------------------------------------
 # ----------------------------------------------------------------------------#
-
-# Data Exploration -----------------------------------------------------------
-# todo: Can be removed because later same plots will be repeated with the final model
-
-ggplot(gamma_data, aes(pca1_clima, gamma_100_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(Prec_Varieb, gamma_100_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(pca1_clima, Prec_Varieb)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(cover_litter, gamma_100_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(pH, gamma_100_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(Corg_percent, gamma_100_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(grazing_intencity, gamma_100_div)) +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.4)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(mowing, gamma_100_div)) +
-  geom_boxplot() +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.1)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
 
 # GLLM analyses ----------------------------------------------------------------
 
@@ -434,53 +389,6 @@ write.csv(R, file = "results/R2_gamma_SR.csv")
 #-----------------------------------------------------------------------------#
 # (1) ENSPIE -------------------------------------------------------
 # ----------------------------------------------------------------------------#
-
-# Data Exploration-------------------------------------------------------------
-# todo: Do we need the data exploration plots as they are later also done together with
-
-
-ggplot(gamma_data, aes(pca1_clima, gamma_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(Prec_Varieb, gamma_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(pca1_clima, Prec_Varieb)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(cover_litter, gamma_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(pH, gamma_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(Corg_percent, gamma_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(grazing_intencity, gamma_100_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat),
-    position = position_jitter(w = 0.4)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(gamma_data, aes(mowing, gamma_100_ENSPIE)) +
-  geom_boxplot() +
-  geom_point(size = 2, aes(color = habitat),
-    position = position_jitter(w = 0.1)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
 
 # GLLM ------------------------------------------------------------------------
 

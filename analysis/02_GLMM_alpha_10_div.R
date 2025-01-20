@@ -111,50 +111,6 @@ alpha_mean <- alpha_data %>%
 
 str(alpha_mean)
 
-# Plot alpha diversity against environmental variables ------------------------
-# todo: Do we need the data exploration plots as they are later also done together with
-# the models?
-ggplot(alpha_mean, aes(pca1_clima, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(Prec_Varieb, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(pca1_clima, Prec_Varieb)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(cover_litter, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(pH, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(Corg_percent, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(grazing_intencity, alpha_10_div)) +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(width = 0.4)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(mowing, alpha_10_div)) +
-  geom_boxplot() +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(width = 0.1)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
 # GLLM analyses ----------------------------------------------------------------
 
 # Exploration ------------------------------------------------------------------
@@ -490,50 +446,6 @@ write.csv(R, file = "results/R2_alpha_SR.csv")
 #-----------------------------------------------------------------------------#
 # (1) ENSPIE -------------------------------------------------------
 # ----------------------------------------------------------------------------#
-
-# Data Exploration-------------------------------------------------------------
-# todo: Do we need the data exploration plots as they are later also done together with
-# the models?
-ggplot(alpha_mean, aes(pca1_clima, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(Prec_Varieb, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(pca1_clima, Prec_Varieb)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(cover_litter, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(pH, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(Corg_percent, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(grazing_intencity, alpha_10_ENSPIE)) +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.4)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
-
-ggplot(alpha_mean, aes(mowing, alpha_10_ENSPIE)) +
-  geom_boxplot() +
-  geom_point(size = 2, aes(color = habitat), position = position_jitter(w = 0.1)) +
-  scale_color_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
 
 # GLLM ------------------------------------------------------------------------
 
