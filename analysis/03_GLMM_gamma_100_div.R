@@ -415,10 +415,6 @@ Fig.alphaSR_clima + Fig.gammaSR_clima +
 MuMIn::r.squaredGLMM(m1_1)
 MuMIn::r.squaredGLMM(m2_1)
 
-# todo: remove because not used in results anymore
-# write.csv(MuMIn::r.squaredGLMM(m1_1),  file = "results/Mod1_R2_gamma_SR.csv")
-# write.csv(MuMIn::r.squaredGLMM(m2_1),  file = "results/Mod2_R2_gamma_SR.csv")
-
 # Partial R2 for fixed effects
 Anova(m1_1)
 Anova(m2_1) # for Prec_Varieb
@@ -434,12 +430,6 @@ R <- R2 %>%
   bind_rows(R1 %>% filter(!Effect == "Model"))
 
 write.csv(R, file = "results/R2_gamma_SR.csv")
-
-# todo: remove because not used in results anymore
-# write.csv(Anova(m1_1),  file = "results/glmer_gamma_SR.csv")
-# write.csv(coef(summary(m1_1)),  file = "results/summary_gamma_SR.csv")
-# write.csv(Anova(m2_1),  file = "results/glmer_gamma_SR_2.csv")
-# write.csv(coef(summary(m2_1)),  file = "results/summary_gamma_SR_2.csv")
 
 #-----------------------------------------------------------------------------#
 # (1) ENSPIE -------------------------------------------------------
@@ -754,22 +744,10 @@ Fig.alphaSR_clima + Fig.gammaSR_clima +
 Anova(m1_3_ENSPIE)
 Anova(m2_1_ENSPIE) # for Prec_Varieb
 
-# todo: remove because not used anmyre
-# write.csv(Anova(m1_3_ENSPIE),  file = "results/glmer_gamma_ENSPIE.csv")
-# write.csv(coef(summary(m1_3_ENSPIE)),  file = "results/summary_gamma_ENSPIE.csv")
-# write.csv(Anova(m2_1_ENSPIE),  file = "results/glmer_gamma_ENSPIE_2.csv")
-# write.csv(coef(summary(m2_1_ENSPIE)),  file = "results/summary_gamma_ENSPIE_2.csv")
-
-
 # R2m and R2c are marginal (for fixed predictors) and
 ## conditional (for fixed and random predictors) coefficients of determination
 MuMIn::r.squaredGLMM(m1_3_ENSPIE)
 MuMIn::r.squaredGLMM(m2_1_ENSPIE)
-
-# todo: remove because not used in results anymore
-# write.csv(MuMIn::r.squaredGLMM(m1_3_ENSPIE),  file = "results/Mod1_R2_gamma_ENSPIE.csv")
-# write.csv(MuMIn::r.squaredGLMM(m2_1_ENSPIE),  file = "results/Mod2_R2_gamma_ENSPIE.csv")
-
 
 # Partial R2 for fixed effects
 R1_ENSPIE <- r2glmm::r2beta(m1_3_ENSPIE, partial = T, data = gamma_data, method = 'sgv')

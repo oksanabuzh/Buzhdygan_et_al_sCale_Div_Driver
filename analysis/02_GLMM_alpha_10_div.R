@@ -470,10 +470,6 @@ Fig.alphaSR_clima +
 MuMIn::r.squaredGLMM(m1_3)
 MuMIn::r.squaredGLMM(m2_1)
 
-# todo: Remove because they are not needed in the results anymore
-# write.csv(MuMIn::r.squaredGLMM(m1_3),  file = "results/Mod1_R2_alpha_SR.csv")
-# write.csv(MuMIn::r.squaredGLMM(m2_1),  file = "results/Mod2_R2_alpha_SR.csv")
-
 # Partial R2 for fixed effects
 Anova(m1_3) # fo all variables
 Anova(m2_1) # for Prec_Varieb
@@ -490,13 +486,6 @@ R <- R2 %>%
   bind_rows(R1 %>% filter(!Effect == "Model"))
 
 write.csv(R, file = "results/R2_alpha_SR.csv")
-
-# todo: Remove this as they are also not needed in the results anymore
-# write.csv(MuMIn::r.squaredGLMM(m1_3),  file = "results/Mod_R2_alpha_SR.csv")
-# write.csv(Anova(m1_3),  file = "results/glmer_alpha_SR.csv")
-# write.csv(coef(summary(m1_3)),  file = "results/summary_alpha_SR.csv")
-# write.csv(Anova(m2_1),  file = "results/glmer_alpha_SR_2.csv")
-# write.csv(coef(summary(m2_1)),  file = "results/summary_alpha_SR_2.csv")
 
 #-----------------------------------------------------------------------------#
 # (1) ENSPIE -------------------------------------------------------
@@ -839,10 +828,6 @@ Fig.alphaENSPIE_clima +
 MuMIn::r.squaredGLMM(m1_1_ENSPIE)
 MuMIn::r.squaredGLMM(m2_1_ENSPIE)
 
-# todo: Remove becau8se they are not needed in the results anymore
-# write.csv(MuMIn::r.squaredGLMM(m1_1_ENSPIE),  file = "results/Mod1_R2_alpha_ENSPIE.csv")
-# write.csv(MuMIn::r.squaredGLMM(m2_1_ENSPIE),  file = "results/Mod2_R2_alpha_ENSPIE.csv")
-
 # Partial R2 for fixed effects
 Anova(m1_1_ENSPIE) # fo all variables
 Anova(m2_1_ENSPIE) # for Prec_Varieb
@@ -863,9 +848,3 @@ R_ENSPIE <- R2_ENSPIE %>%
   )
 
 write.csv(R_ENSPIE, file = "results/R2_alpha_ENSPIE.csv")
-
-# todo: remove because not used anymore
-# write.csv(Anova(m1_1_ENSPIE),  file = "results/glmer_alpha_ENSPIE.csv")
-# write.csv(coef(summary(m1_1_ENSPIE)),  file = "results/summary_alpha_ENSPIE.csv")
-# write.csv(Anova(m2_1_ENSPIE),  file = "results/glmer_alpha_ENSPIE_2.csv")
-# write.csv(coef(summary(m2_1_ENSPIE)),  file = "results/summary_alpha_ENSPIE_2.csv")
