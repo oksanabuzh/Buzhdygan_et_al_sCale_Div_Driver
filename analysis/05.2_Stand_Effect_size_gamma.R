@@ -1,4 +1,4 @@
-# Calculate standardized effect size for each predictor on
+# Purpose: Calculate standardized effect size for each predictor on
 ## gamma species richness and alpha ENSPIE
 
 # Steps:
@@ -10,36 +10,38 @@
 #         Standardized coefficient of composite is the total non-linear effect of predictor(i.e., x and x^2), controlling for other predictors in the model
 
 
-# dev.off()
-rm(list = ls(all = TRUE))
-
-
-# libraries----
+# Load libraries -----------------------------------------------------------
 library(tidyverse)
 library(performance)
 library(car)
 library(lme4)
 library(lmerTest)
-# library(ggplot2)
 library(sjPlot)
 library(piecewiseSEM)
 
-# data----
 
-## climate PCA data----
-climate_PCA <- read_csv("data/climate_PCA.csv")
+# Read and prepare data -------------------------------------------------------
 
-## environmental variables data----
+# SR - species richness
+# ENSPIE - evenness measure calculated as inverse Simpson using species cover
+# cover - is cumulative plant cover
+
+# "data/alpha_beta_gamma_community_variabl.csv" combines all diversity measures and plant cover
+# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots,
+# thus "series" (i.e. 100m2 plots), nested in dataset (separate vegetation survey campaign)
+# are fitted as a random effect
+# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the 10m2 plots)
+# beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
+
+# Read climate data and compund climate variable from PCA analysis in "1_prepare_data/ PCA_environment.R"
+climate_PCA <- read.csv("data/climate_PCA.csv")
+
+# Read all environmental data
 header <- read_csv("data/Environm_variabl.csv") %>%
   full_join(
     read.csv("data/climate_PCA.csv"),
     by = "series"
   )
-
-str(header)
-names(header)
-
-## data for 100m2 (gamma) ----
 
 # mean per series (per 100m2 plots)
 header_mean <- header %>%
@@ -49,21 +51,17 @@ header_mean <- header %>%
   summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) %>%
   ungroup()
 
-# join with dataset for diversity measures
+# Prepare subset of data for gamma scale (100 m2 plots) -------------------------
 beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   filter(type == "gamma" | type == "beta") %>%
   unite("metric", c(type, scale, metric), sep = "_") %>%
   pivot_wider(names_from = metric, values_from = value) %>%
-  full_join(header_mean, by = c("dataset", "series"))
+  full_join(header_mean, by = c("dataset", "series")) %>%
+  mutate(dataset = factor(dataset))
 
 str(beta_gamma)
-names(beta_gamma)
 
-
-beta_gamma$dataset <- factor(beta_gamma$dataset) # dataset is a separate vegetation survey campaign
-
-
-# selected variables
+# selected variables, removed NAs
 gamma_data <- beta_gamma %>%
   dplyr::select(gamma_100_div, gamma_100_ENSPIE,
     pca1_clima,
@@ -79,51 +77,50 @@ gamma_data <- beta_gamma %>%
   mutate(habitat = fct_relevel(habitat_broad,
     c("saline", "complex", "dry",
       "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na
-
-
+  drop_na()
 
 str(gamma_data)
 
+# gamma SR -------------------------------------------------------------------
 
+# 1) Create composites to captures the collective effect of x and x^2 on y -------------------------
 
-# gamma SR -----
-
-## 1) Create composites to captures the collective effect of x and x^2 on y ----
-
-gamma_data$pca1_clima_2 <- (as.vector(scale(gamma_data$pca1_clima, center = T, scale = F)))^2
+# Climate
+gamma_data$pca1_clima_2 <- (as.vector(scale(gamma_data$pca1_clima,
+  center = TRUE, scale = FALSE)))^2
 
 m1 <- glmer.nb(gamma_100_div ~ pca1_clima + pca1_clima_2 +
   (1 | dataset), data = gamma_data)
 
-
-gamma_data$pH_2 <- (as.vector(scale(gamma_data$pH, center = T, scale = F)))^2
+# pH
+gamma_data$pH_2 <- (as.vector(scale(gamma_data$pH, center = TRUE, scale = FALSE)))^2
 
 m2 <- glmer.nb(gamma_100_div ~ pH + pH_2 +
   (1 | dataset), data = gamma_data)
 check_convergence(m2)
 
-
-Corg_percent_2 <- (as.vector(scale(gamma_data$Corg_percent, center = T, scale = F)))^2
+# C organic
+Corg_percent_2 <- (as.vector(scale(gamma_data$Corg_percent, center = TRUE,
+  scale = FALSE)))^2
 
 m3 <- glmer.nb(gamma_100_div ~ Corg_percent + Corg_percent_2 +
   (1 | dataset), data = gamma_data)
 
-
+# Litter cover
 gamma_data$cover_litter_10 <- gamma_data$cover_litter / 10
-gamma_data$cover_litter_2 <- (as.vector(scale(gamma_data$cover_litter_10, center = T, scale = T)))^2
-
+gamma_data$cover_litter_2 <- (as.vector(scale(gamma_data$cover_litter_10,
+  center = TRUE, scale = TRUE)))^2
 
 m4 <- glmer.nb(gamma_100_div ~ cover_litter_10 + cover_litter_2 +
   (1 | dataset), data = gamma_data)
 
-
+# Precipitation CV
 gamma_data$Prec_Varieb_10 <- gamma_data$Prec_Varieb / 10
-gamma_data$Prec_Varieb_2 <- (as.vector(scale(gamma_data$Prec_Varieb_10, center = T, scale = F)))^2
+gamma_data$Prec_Varieb_2 <- (as.vector(scale(gamma_data$Prec_Varieb_10,
+  center = TRUE, scale = FALSE)))^2
 
 m5 <- glmer.nb(gamma_100_div ~ Prec_Varieb_10 + Prec_Varieb_2 +
   (1 | dataset), data = gamma_data)
-
 
 # extract the coefficients, use them to generate the factor scores for the composits
 gamma_dt <- gamma_data %>%
@@ -138,8 +135,7 @@ gamma_dt <- gamma_data %>%
   mutate(PrecipCV_Comp = summary(m5)$coefficients[2, 1] * Prec_Varieb_10 +
     summary(m5)$coefficients[3, 1] * Prec_Varieb_2)
 
-## 2) Use the composites to predict y ----
-
+# 2) Use the composites to predict y -----------------------------------------
 m_gamma <- glmer.nb(gamma_100_div ~
   clima_Comp +
   Corg_Comp +
@@ -153,15 +149,15 @@ check_convergence(m_gamma)
 Anova(m_gamma)
 check_collinearity(m_gamma)
 
-## 3) Obtain  the standardized coefficients of predictors ----
+# 3) Obtain  the standardized coefficients of predictors ---------------------
 # standardized coefficient of composit is the total non-linear effect of predictor(i.e., x and x^2), controlling for other predictors in the model
 # use the coefs function from piecewiseSEM to obtain the standardized coefficients
-gamma.SR_Std.Estimate <- coefs(m_gamma, standardize = "scale", standardize.type = "Menard.OE")[, c(1, 2, 7, 8, 9)]
+gamma.SR_Std.Estimate <- coefs(m_gamma, standardize = "scale",
+  standardize.type = "Menard.OE")[, c(1, 2, 7, 8, 9)]
 gamma.SR_Std.Estimate
 
 
-### 3.1 Precipitation CV  ----
-
+# 3.1 Precipitation CV  -----------------------------------------------------
 m_gamma <- glmer.nb(gamma_100_div ~
   clima_Comp +
   PrecipCV_Comp +
@@ -173,13 +169,13 @@ m_gamma <- glmer.nb(gamma_100_div ~
 
 Anova(m_gamma)
 
-gamma.SR_Std.Estimate_PrecipCV <- coefs(m_gamma, standardize = "scale", standardize.type = "Menard.OE")[, c(1, 2, 7, 8, 9)]
+gamma.SR_Std.Estimate_PrecipCV <- coefs(m_gamma, standardize = "scale",
+  standardize.type = "Menard.OE")[, c(1, 2, 7, 8, 9)]
 gamma.SR_Std.Estimate_PrecipCV
 
+# gamma ENSPIE ----------------------------------------------------------------
 
-# gamma ENSPIE -----
-
-## 1) Create composites to captures the collective effect of x and x^2 on y ----
+# 1) Create composites to captures the collective effect of x and x^2 on y -------------------------
 
 m1_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~ pca1_clima + pca1_clima_2 +
   (1 | dataset), data = gamma_data)
@@ -192,7 +188,6 @@ m3_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~ Corg_percent + Corg_percent_2 +
 
 m4_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~ cover_litter_10 + cover_litter_2 +
   (1 | dataset), data = gamma_data)
-
 
 m5_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~ Prec_Varieb_10 + Prec_Varieb_2 +
   (1 | dataset), data = gamma_data)
@@ -210,7 +205,7 @@ gamma_dt_ENSPIE <- gamma_data %>%
   mutate(PrecipCV_Comp = summary(m5_ENSPIE)$coefficients[2, 1] * Prec_Varieb_10 +
     summary(m5_ENSPIE)$coefficients[3, 1] * Prec_Varieb_2)
 
-## 2) Use the composites to predict y ----
+# 2) Use the composites to predict y -----------------------------------------
 
 m_gamma_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~
   clima_Comp +
@@ -224,16 +219,14 @@ check_convergence(m_gamma_ENSPIE)
 Anova(m_gamma_ENSPIE)
 check_collinearity(m_gamma_ENSPIE)
 
-## 3) Obtain  the standardized coefficients of predictors ----
+# 3) Obtain  the standardized coefficients of predictors ---------------------
 # standardized coefficient of composit is the total non-linear effect of predictor(i.e., x and x^2), controlling for other predictors in the model
 # use the coefs function from piecewiseSEM to obtain the standardized coefficients
-gamma.ENSPIE_Std.Estimate <- coefs(m_gamma_ENSPIE, standardize = "scale", standardize.type = "Menard.OE")[, c(1, 2, 7, 8, 9)]
+gamma.ENSPIE_Std.Estimate <- coefs(m_gamma_ENSPIE, standardize = "scale",
+  standardize.type = "Menard.OE")[, c(1, 2, 7, 8, 9)]
 gamma.ENSPIE_Std.Estimate
 
-
-
-### 3.1 Precipitation CV  ----
-
+# 3.1 Precipitation CV  -----------------------------------------------------
 m_gamma_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~
   clima_Comp +
   PrecipCV_Comp +
@@ -243,12 +236,11 @@ m_gamma_ENSPIE <- lmer(log(gamma_100_ENSPIE) ~
   grazing_intencity + mowing +
   (1 | dataset), data = gamma_dt_ENSPIE)
 
-gamma.ENSPIE_Std.Estimate_PrecipCV <- coefs(m_gamma_ENSPIE, standardize = "scale", standardize.type = "Menard.OE")[, c(1, 2, 7, 8, 9)]
+gamma.ENSPIE_Std.Estimate_PrecipCV <- coefs(m_gamma_ENSPIE, standardize = "scale",
+  standardize.type = "Menard.OE")[, c(1, 2, 7, 8, 9)]
 gamma.ENSPIE_Std.Estimate_PrecipCV
 
-
-# rebind tables----
-
+# Combine tables -----------------------------------------------------------
 gamma_st.eff <- rbind(gamma.SR_Std.Estimate,
   gamma.SR_Std.Estimate_PrecipCV[2, ],
   gamma.ENSPIE_Std.Estimate,
