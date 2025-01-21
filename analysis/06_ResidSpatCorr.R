@@ -4,34 +4,34 @@
 # https://theoreticalecology.wordpress.com/2012/05/12/spatial-autocorrelation-in-statistical-models-friend-or-foe/
 # https://rdrr.io/cran/DHARMa/man/testSpatialAutocorrelation.html
 
-# libraries----
+# Load libraries -----------------------------------------------------------
 library(tidyverse)
 library(car)
 library(lme4)
 library(lmerTest)
 
 
-# prepare data----
+# Read and prepare data -------------------------------------------------------
 
-# "data/climate_PCA.csv" contains scores for the compound climate variable,
-# derived from the PCA analysis in "1_prepare_data/ PCA_environment.R"
-
-# "data/Environm_variabl.csv" contains all environmental data
-
-
+# Read climate data and compund climate variable from PCA analysis in "1_prepare_data/ PCA_environment.R"
 climate_PCA <- read.csv("data/climate_PCA.csv")
 
+# Read all environmental data
 header <- read_csv("data/Environm_variabl.csv") %>%
   full_join(
     read.csv("data/climate_PCA.csv"),
     by = "series"
   )
 
-str(header)
-names(header)
+# mean per series (per 100m2 plots)
+header_mean <- header %>%
+  select(c(series, lat, lon, zonality, habitat_broad,
+           where(is.numeric))) %>%
+  group_by(series, zonality, habitat_broad) %>%
+  summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) %>%
+  ungroup()
 
-# prepare subset of data for alpha scale (10-m2 plots)
-
+# Prepare subset of data for alpha scale (10 m2 plots) -------------------------
 alpha <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   filter(type == "alpha") %>%
   unite("metric", c(type, scale, metric), sep = "_") %>%
@@ -42,13 +42,8 @@ alpha <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   mutate(dataset = factor(dataset))
 
 str(alpha)
-names(alpha)
 
-# dataset is a separate vegetation survey campaign
-alpha$dataset
-
-
-# Remove NAs
+# Remove NAs and select only needed variables
 alpha_data <- alpha %>%
   dplyr::select(alpha_10_div, alpha_10_ENSPIE,
     lat, lon, pca1_clima,
@@ -63,38 +58,9 @@ alpha_data <- alpha %>%
     mowing = factor(mowing)) %>%
   mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
     "wet", "mesic", "fringe", "alpine"))) %>%
+  drop_na()
 
-  drop_na
-
-str(alpha_data)
-
-# plot on a mean alpha per series to omit pseudoreplication of the plots:
-alpha_mean <- alpha_data %>%
-  dplyr::select(alpha_10_div, alpha_10_ENSPIE,
-    lat, lon, pca1_clima,
-    grazing_intencity, mowing,
-    cover_litter,
-    BIO7, BIO15,
-    pH, Corg_percent,
-    dataset, series, habitat_broad) %>%
-  mutate(Tem_range = BIO7,
-    Prec_Varieb = BIO15,
-    mowing = factor(mowing)) %>%
-  mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
-    "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na
-
-str(alpha_mean)
-
-## data gamma----
-
-header_mean <- header %>%
-  select(c(series, lat, lon, zonality, habitat_broad,
-    where(is.numeric))) %>%
-  group_by(series, zonality, habitat_broad) %>%
-  summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) %>%
-  ungroup()
-
+# Prepare subset of data for gamma scale (100 m2 plots) -----------------------
 beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   filter(type == "gamma" | type == "beta") %>%
   unite("metric", c(type, scale, metric), sep = "_") %>%
@@ -103,11 +69,6 @@ beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   mutate(dataset = factor(dataset))
 
 str(beta_gamma)
-names(beta_gamma)
-
-# dataset is a separate vegetation survey campaign
-beta_gamma$dataset
-
 
 # Select variables, remove NAs
 gamma_data <- beta_gamma %>%
@@ -124,9 +85,9 @@ gamma_data <- beta_gamma %>%
     mowing = factor(mowing)) %>%
   mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
     "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na
+  drop_na()
 
-## data beta----
+# Prepare subset of data for beta scale ---------------------------------------
 beta_data <- beta_gamma %>%
   dplyr::select(beta_100_div, beta_100_ENSPIE,
     lat, lon, pca1_clima,
@@ -141,19 +102,13 @@ beta_data <- beta_gamma %>%
     mowing = factor(mowing)) %>%
   mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
     "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na
+  drop_na()
 
 str(beta_data)
 
+# Morans's I tests -----------------------------------------------------------
 
-
-
-# Morans's I tests ----
-#------------------------------------------------------------------------------#
-# alpha ----
-#------------------------------------------------------------------------------#
-# alpha SR ----
-#------------------------------------------------------------------------------#
+# alpha SR -------------------------------------------------------------------
 m1_3_a <- glmer(alpha_10_div ~
   poly(pca1_clima, 2) +
   poly(Corg_percent, 2) +
@@ -161,7 +116,6 @@ m1_3_a <- glmer(alpha_10_div ~
   poly(cover_litter, 2) +
   grazing_intencity + mowing +
   (1 | dataset / series), family = "poisson", data = alpha_data)
-
 
 m2_1_a <- glmer(alpha_10_div ~
   poly(pca1_clima, 2) +
@@ -172,10 +126,9 @@ m2_1_a <- glmer(alpha_10_div ~
   grazing_intencity + mowing +
   (1 | dataset / series), family = "poisson", data = alpha_data)
 
+# Get residuals -----------------------------------------------------------
 
-## Get residuals ----
-
-#  For lme4, re.form = NULL simulats residuals conditional on fitted rendom effcets
+#  For lme4, re.form = NULL simulates residuals conditional on fitted random effects
 ## re.form specify which random effects to condition on when predicting.
 # If NULL, include all random effects; if NA or ~0, include no random effects.
 # https://rdrr.io/cran/DHARMa/man/testSpatialAutocorrelation.html
@@ -184,7 +137,8 @@ m2_1_a <- glmer(alpha_10_div ~
 res.sim_alpha_m1 <- DHARMa::simulateResiduals(m1_3_a, re.form = NULL)
 res.sim_alpha_m2 <- DHARMa::simulateResiduals(m2_1_a, re.form = NULL)
 
-# randomized residuals from DHARMa is better than deviance residuals, because  deviance residuals are not homogeneous)
+# randomized residuals from DHARMa is better than deviance residuals, 
+# because  deviance residuals are not homogeneous)
 # https://stats.stackexchange.com/questions/507934/testing-the-spatiale-autocorrelation-on-the-residuals-of-the-mixed-effect-logist?newreg=e8a0041e387743139c3e9885b71d62eb
 # https://rdrr.io/cran/DHARMa/man/testSpatialAutocorrelation.html
 residuals(m1_3_a, type = "deviance")
@@ -194,19 +148,17 @@ residuals(m1_3_a, type = "deviance")
 # are higher than for pairs of points that are far apart.
 # We use latitude and longitude for each plot, generate a distance matrix,
 # then take inverse of the matrix values and replace the diagonal entries with zero:
-dM_a = 1 / as.matrix(dist(cbind(alpha_data$lon, alpha_data$lat)))
+dM_a <- 1 / as.matrix(dist(cbind(alpha_data$lon, alpha_data$lat)))
 diag(dM_a) <- 0
 str(dM_a)
-# We have created a matrix where each off-diagonal entry [i, j] in the matrix is equal to 1/(distance between point i and point j).
-
+# We have created a matrix where each off-diagonal entry [i, j] in the matrix is 
+# equal to 1/(distance between point i and point j).
 
 # (3) calculate Moran’s I (DHARMa works using ape package)
 DHARMa::testSpatialAutocorrelation(res.sim_alpha_m1, distMat = dM_a)
 DHARMa::testSpatialAutocorrelation(res.sim_alpha_m2, distMat = dM_a)
 
-#------------------------------------------------------------------------------#
-# alpha ENSPIE----
-#------------------------------------------------------------------------------#
+# alpha ENSPIE-------------------------------------------------------------------
 m1_1_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   poly(pca1_clima, 2) +
   pH +
@@ -225,20 +177,18 @@ m2_1_ENSPIE <- lmer(log(alpha_10_ENSPIE) ~
   (1 | dataset / series), data = alpha_data)
 
 
-## Get residuals ----
+# Get residuals -----------------------------------------------------------
 
 # (1) get randomized residuals.
 res.sim_alpha_m1_ENSPIE <- DHARMa::simulateResiduals(m1_1_ENSPIE, re.form = NULL)
 res.sim_alpha_m2_ENSPIE <- DHARMa::simulateResiduals(m2_1_ENSPIE, re.form = NULL)
-
-
 
 # (2)  generate a matrix of inverse distance weights.
 # In the matrix, entries for pairs of points that are close together
 # are higher than for pairs of points that are far apart.
 # We use latitude and longitude for each plot, generate a distance matrix,
 # then take inverse of the matrix values and replace the diagonal entries with zero:
-dM_a = 1 / as.matrix(dist(cbind(alpha_data$lon, alpha_data$lat)))
+dM_a <- 1 / as.matrix(dist(cbind(alpha_data$lon, alpha_data$lat)))
 diag(dM_a) <- 0
 str(dM_a)
 # We have created a matrix where each off-diagonal entry [i, j] in the matrix is equal to 1/(distance between point i and point j).
@@ -247,11 +197,7 @@ str(dM_a)
 DHARMa::testSpatialAutocorrelation(res.sim_alpha_m1_ENSPIE, distMat = dM_a)
 DHARMa::testSpatialAutocorrelation(res.sim_alpha_m2_ENSPIE, distMat = dM_a)
 
-#------------------------------------------------------------------------------#
-###  gamma -----
-#------------------------------------------------------------------------------#
-# gamma SR ----
-#------------------------------------------------------------------------------#
+# gamma SR -------------------------------------------------------------------
 m1_1_g <- glmer.nb(gamma_100_div ~
   poly(pca1_clima, 2) +
   poly(Corg_percent, 2) +
@@ -269,12 +215,14 @@ m2_1_g <- glmer.nb(gamma_100_div ~
   grazing_intencity + mowing +
   (1 | dataset), data = gamma_data)
 
+# Get residuals -----------------------------------------------------------
+
 # (1) get randomized residuals.
 res.sim_gamma_m1 <- DHARMa::simulateResiduals(m1_1_g, re.form = NULL)
 res.sim_gamma_m2 <- DHARMa::simulateResiduals(m2_1_g, re.form = NULL)
 
 # (2)  generate a matrix of inverse distance weights.
-dM_g = 1 / as.matrix(dist(cbind(gamma_data$lon, gamma_data$lat)))
+dM_g <- 1 / as.matrix(dist(cbind(gamma_data$lon, gamma_data$lat)))
 diag(dM_g) <- 0
 str(dM_g)
 
@@ -282,10 +230,7 @@ str(dM_g)
 DHARMa::testSpatialAutocorrelation(res.sim_gamma_m1, distMat = dM_g)
 DHARMa::testSpatialAutocorrelation(res.sim_gamma_m2, distMat = dM_g)
 
-
-#------------------------------------------------------------------------------#
-# gamma ENSPIE ----
-#------------------------------------------------------------------------------#
+# gamma ENSPIE ----------------------------------------------------------------
 m1_3_ENSPIE_g <- lmer(log(gamma_100_ENSPIE) ~
   poly(pca1_clima, 2) +
   poly(pH, 2) +
@@ -303,6 +248,7 @@ m2_1_ENSPIE_g <- lmer(log(gamma_100_ENSPIE) ~
   grazing_intencity + mowing +
   (1 | dataset), data = gamma_data)
 
+# Get residuals -----------------------------------------------------------
 
 # (1) get randomized residuals.
 res.sim_gamma_m1_ENSPIE <- DHARMa::simulateResiduals(m1_3_ENSPIE_g, re.form = NULL)
@@ -318,12 +264,7 @@ DHARMa::testSpatialAutocorrelation(res.sim_gamma_m1_ENSPIE, distMat = dM_g)
 DHARMa::testSpatialAutocorrelation(res.sim_gamma_m2_ENSPIE, distMat = dM_g)
 
 
-#------------------------------------------------------------------------------#
-# beta ----
-#------------------------------------------------------------------------------#
-# beta SR ----
-#------------------------------------------------------------------------------#
-
+# beta SR -------------------------------------------------------------------
 m1_1_b <- lmer(beta_100_div ~
   poly(pca1_clima, 2) +
   poly(Corg_percent, 2) +
@@ -341,7 +282,8 @@ m2_1_b <- lmer(beta_100_div ~
   poly(cover_litter, 2) +
   grazing_intencity + mowing +
   (1 | dataset), data = beta_data)
-## Get residuals ----
+
+# Get residuals -----------------------------------------------------------
 
 # (1) get randomized residuals.
 res.sim_beta_m1 <- DHARMa::simulateResiduals(m1_1_b, re.form = NULL)
@@ -357,10 +299,7 @@ DHARMa::testSpatialAutocorrelation(res.sim_beta_m1, distMat = dM_b)
 DHARMa::testSpatialAutocorrelation(res.sim_beta_m2, distMat = dM_b)
 
 
-#------------------------------------------------------------------------------#
-# beta ENSPIE ----
-#------------------------------------------------------------------------------#
-
+# beta ENSPIE ----------------------------------------------------------------
 m1_1_ENSPIE_b <- lmer(beta_100_ENSPIE ~
   poly(pca1_clima, 2) +
   poly(pH, 2) +
@@ -377,13 +316,14 @@ m2_1_ENSPIE_b <- lmer(beta_100_ENSPIE ~
   grazing_intencity + mowing +
   (1 | dataset), data = beta_data)
 
-## Get residuals ----
+# Get residuals -----------------------------------------------------------
+
 # (1) get randomized residuals.
 res.sim_beta_m1_ENSPIE <- DHARMa::simulateResiduals(m1_1_ENSPIE_b, re.form = NULL)
 res.sim_beta_m2_ENSPIE <- DHARMa::simulateResiduals(m2_1_ENSPIE_b, re.form = NULL)
 
 # (2)  generate a matrix of inverse distance weights.
-dM_b = 1 / as.matrix(dist(cbind(beta_data$lon, beta_data$lat)))
+dM_b <- 1 / as.matrix(dist(cbind(beta_data$lon, beta_data$lat)))
 diag(dM_b) <- 0
 str(dM_b)
 
