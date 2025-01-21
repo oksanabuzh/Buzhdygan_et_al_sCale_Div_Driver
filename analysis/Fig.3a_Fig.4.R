@@ -4,8 +4,6 @@
 # Scatterplot of alpha vs gamma Fig. S4
 
 library(tidyverse)
-library(MetBrewer)
-library(patchwork)
 
 # Read and prepare data -------------------------------------------------------
 alpha_st.eff <- read_csv("results/alpha_st.eff.csv") %>% 
