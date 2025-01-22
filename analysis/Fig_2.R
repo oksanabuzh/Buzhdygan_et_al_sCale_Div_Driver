@@ -2,6 +2,7 @@
 
 # Load libraries --------------------------------------------------------------
 library(tidyverse)
+library(sjPlot)
 library(lme4)
 library(lmerTest)
 library(patchwork)
@@ -15,6 +16,16 @@ habitat_colors = c(
   mesic = "#0066FF",
   fringe = "#00B200",
   alpine = "#006600")
+
+# Set theme for the model plots
+set_theme(base = theme_bw(),
+          axis.textsize.x = 1,
+          axis.textsize.y = 1,
+          axis.textcolor = "black",
+          axis.title.color = "black",
+          axis.title.size = 1.4,
+          legend.pos = "None",
+          geom.linetype = 2)
 
 
 # Read and prepare data -------------------------------------------------------
