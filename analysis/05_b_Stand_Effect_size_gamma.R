@@ -66,13 +66,9 @@ gamma_data <- beta_gamma %>%
     pca1_clima,
     grazing_intencity, mowing,
     cover_litter,
-    BIO7, BIO15, BIO1, BIO12,
+    Tem_range, Prec_Varieb, Temprt, Precipt,
     pH, Corg_percent,
     dataset, series, habitat_broad, zonality) %>%
-  mutate(Tem_range = BIO7,
-    Prec_Varieb = BIO15,
-    Temprt = BIO1,
-    Precipt = BIO12) %>%
   mutate(habitat = fct_relevel(habitat_broad,
     c("saline", "complex", "dry",
       "wet", "mesic", "fringe", "alpine"))) %>%

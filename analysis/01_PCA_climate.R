@@ -13,12 +13,12 @@ header_data <- read_csv("data/Environm_variabl.csv")
 # selected climate variables
 climate <- header_data %>%
   group_by(series) %>%
-  summarise(BIO1 = mean(BIO1), BIO12 = mean(BIO12)) %>%
+  summarise(Temprt = mean(Temprt), Precipt = mean(Precipt)) %>%
   mutate(
-    Temprt = as.vector(scale(BIO1, scale = TRUE)),
-    Precipt = as.vector(scale(BIO12, scale = TRUE))
+    Temprt_scaled = as.vector(scale(Temprt, scale = TRUE)),
+    Precipt_scaled = as.vector(scale(Precipt, scale = TRUE))
   ) %>%
-  select(Temprt, Precipt, series) %>%
+  select(Temprt_scaled, Precipt_scaled, series) %>%
   drop_na()
 
 nrow(climate)

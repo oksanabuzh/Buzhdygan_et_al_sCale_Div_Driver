@@ -71,13 +71,11 @@ alpha_data <- alpha %>%
     pca1_clima,
     grazing_intencity, mowing,
     cover_litter,
-    BIO7, BIO15,
+    Tem_range, Prec_Varieb,
     pH, Corg_percent,
     dataset, series, habitat_broad,
     subplot) %>%
-  mutate(Tem_range = BIO7,
-    Prec_Varieb = BIO15,
-    mowing = factor(mowing)) %>%
+  mutate(mowing = factor(mowing)) %>%
   mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
     "wet", "mesic", "fringe", "alpine"))) %>%
   drop_na()

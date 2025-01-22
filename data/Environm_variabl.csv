@@ -1,4 +1,4 @@
-dataset,plotID,series,subplot,lat,lon,habitat_broad,zonality,BIO1,BIO12,BIO7,BIO15,grazing_intencity,mowing,cover_litter,pH,Corg_percent
+dataset,plotID,series,subplot,lat,lon,habitat_broad,zonality,Temprt,Precipt,Tem_range,Prec_Varieb,grazing_intencity,mowing,cover_litter,pH,Corg_percent
 1,UA01NW,UA01,NW,48.87309,29.07154,dry,zonal,87,572,312,37,0,0,12,7.32,1.842267337
 1,UA01SE,UA01,SE,48.87301,29.07162,dry,zonal,87,572,312,37,0,0,10,6.91,2.361055794
 1,UA02NW,UA02,NW,48.79347,29.11111,dry,zonal,89,540,313,37,0,0,0,6.72,3.587774365
