@@ -104,30 +104,6 @@ alpha_data <- alpha %>%
 
 str(alpha_data)
 
-# plot on a mean alpha per series to omit pseudoreplication of the plots:
-alpha_mean <- alpha_data %>%
-  dplyr::select(
-    alpha_10_div, alpha_10_ENSPIE,
-    pca1_clima,
-    grazing_intencity, mowing,
-    cover_litter,
-    BIO7, BIO15,
-    pH, Corg_percent,
-    dataset, series, habitat_broad
-  ) %>%
-  mutate(
-    Tem_range = BIO7,
-    Prec_Varieb = BIO15,
-    mowing = factor(mowing)
-  ) %>%
-  mutate(habitat = fct_relevel(habitat_broad, c(
-    "saline", "complex", "dry",
-    "wet", "mesic", "fringe", "alpine"
-  ))) %>%
-  drop_na()
-
-str(alpha_mean)
-
 # Prepare subset of data for gamma scale (100 m2 plots) -------------------------
 beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   filter(type == "gamma" | type == "beta") %>%

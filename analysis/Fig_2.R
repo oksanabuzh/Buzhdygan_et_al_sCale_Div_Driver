@@ -80,24 +80,6 @@ alpha_data <- alpha %>%
 
 str(alpha_data)
 
-# plot on a mean alpha per series to omit pseudoreplication of the plots:
-alpha_mean <- alpha_data %>%
-  dplyr::select(alpha_10_div, alpha_10_ENSPIE,
-    pca1_clima,
-    grazing_intencity, mowing,
-    cover_litter,
-    BIO7, BIO15,
-    pH, Corg_percent,
-    dataset, series, habitat_broad) %>%
-  mutate(Tem_range = BIO7,
-    Prec_Varieb = BIO15,
-    mowing = factor(mowing)) %>%
-  mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
-    "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na()
-
-str(alpha_mean)
-
 # Prepare subset of data for gamma scale (100 m2 plots) -------------------------
 beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   filter(type == "gamma" | type == "beta") %>%
@@ -337,7 +319,7 @@ Fig_Clima_10_100 <- ggplot(clima_pred_10m, aes(x, predicted)) +
   geom_ribbon(data = clima_pred_100m, aes(ymin = conf.low, ymax = conf.high),
     alpha = 0.1, fill = "#D6604D") +
   geom_ribbon(data = clima_pred_10m, aes(ymin = conf.low, ymax = conf.high), alpha = 0.4, fill = "#A6CEE3") +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(pca1_clima, alpha_10_div, fill = habitat), size = 1, alpha = 0.8,
     pch = 21) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
@@ -354,7 +336,7 @@ Fig_Humus_10_100 <- ggplot(Humus_pred_10m, aes(x, predicted)) +
   geom_point(data = gamma_data,
     aes(Corg_percent, gamma_100_div, fill = habitat, col = habitat), size = 1, alpha = 0.8,
     pch = 8) +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(Corg_percent, alpha_10_div, fill = habitat), size = 1, alpha = 0.8,
     pch = 21) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
@@ -370,7 +352,7 @@ Fig_Litter_10_100 <- ggplot(Litter_pred_10m, aes(x, predicted)) +
   geom_point(data = gamma_data,
     aes(cover_litter, gamma_100_div, fill = habitat, col = habitat), size = 1, alpha = 0.8,
     pch = 8) +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(cover_litter, alpha_10_div, fill = habitat), size = 1, alpha = 0.8,
     pch = 21) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
@@ -386,7 +368,7 @@ Fig_pH_10_100 <- ggplot(pH_pred_10m, aes(x, predicted)) +
   geom_point(data = gamma_data,
     aes(pH, gamma_100_div, fill = habitat, col = habitat), size = 1, alpha = 0.8,
     pch = 8) +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(pH, alpha_10_div, fill = habitat), size = 1, alpha = 0.8,
     pch = 21) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
@@ -403,7 +385,7 @@ Fig_grazing_10_100 <- ggplot(grazing_pred_10m, aes(x, predicted)) +
   geom_point(data = gamma_data,
     aes(grazing_intencity, gamma_100_div, fill = habitat, col = habitat), size = 1, alpha = 0.8,
     pch = 8, position = position_jitter(w = 0.2)) +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(grazing_intencity, alpha_10_div, fill = habitat), size = 1, alpha = 0.8,
     pch = 21, position = position_jitter(w = 0.2)) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
@@ -420,7 +402,7 @@ Fig_precipCV_10_100 <- ggplot(precipCV_pred_10m, aes(x, predicted)) +
   geom_point(data = gamma_data,
     aes(Prec_Varieb, gamma_100_div, fill = habitat, col = habitat), size = 1, alpha = 0.8,
     pch = 8) +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(Prec_Varieb, alpha_10_div, fill = habitat), size = 1, alpha = 0.8,
     pch = 21) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
@@ -439,7 +421,7 @@ Fig_Clima_10_100_ENSPIE <- ggplot(clima_pred_10m_Ensp, aes(x, predicted)) +
   geom_point(data = gamma_data,
     aes(pca1_clima, gamma_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8,
     pch = 8) +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(pca1_clima, alpha_10_ENSPIE, fill = habitat), size = 1, alpha = 0.8,
     pch = 21) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
@@ -456,7 +438,7 @@ Fig_Humus_10_100_ENSPIE <- ggplot(Humus_pred_10m_Ensp, aes(x, predicted)) +
   geom_point(data = gamma_data,
     aes(Corg_percent, gamma_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8,
     pch = 8) +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(Corg_percent, alpha_10_ENSPIE, fill = habitat), size = 1, alpha = 0.8,
     pch = 21) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
@@ -472,7 +454,7 @@ Fig_Litter_10_100_ENSPIE <- ggplot(Litter_pred_10m_Ensp, aes(x, predicted)) +
   geom_point(data = gamma_data,
     aes(cover_litter, gamma_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8,
     pch = 8) +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(cover_litter, alpha_10_ENSPIE, fill = habitat), size = 1, alpha = 0.8,
     pch = 21) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
@@ -488,7 +470,7 @@ Fig_pH_10_100_ENSPIE <- ggplot(pH_pred_10m_Ensp, aes(x, predicted)) +
   geom_point(data = gamma_data,
     aes(pH, gamma_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8,
     pch = 8) +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(pH, alpha_10_ENSPIE, fill = habitat), size = 1, alpha = 0.8,
     pch = 21) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
@@ -505,7 +487,7 @@ Fig_grazing_10_100_ENSPIE <- ggplot(grazing_pred_10m_Ensp, aes(x, predicted)) +
   geom_point(data = gamma_data,
     aes(grazing_intencity, gamma_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8,
     pch = 8, position = position_jitter(w = 0.2)) +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(grazing_intencity, alpha_10_ENSPIE, fill = habitat), size = 1, alpha = 0.8,
     pch = 21, position = position_jitter(w = 0.2)) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
@@ -522,7 +504,7 @@ Fig_precipCV_10_100_ENSPIE <- ggplot(precipCV_pred_10m_Ensp, aes(x, predicted)) 
   geom_point(data = gamma_data,
     aes(Prec_Varieb, gamma_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8,
     pch = 8) +
-  geom_point(data = alpha_mean,
+  geom_point(data = alpha_data,
     aes(Prec_Varieb, alpha_10_ENSPIE, fill = habitat), size = 1, alpha = 0.8,
     pch = 21) +
   scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
