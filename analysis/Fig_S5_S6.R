@@ -30,108 +30,23 @@ set_theme(base = theme_bw(),
           geom.linetype = 2)
 
 # Read and prepare data -------------------------------------------------------
+# This script prepared the following necessary data for all analyses
+# - alpha_data: diversity, ENSPIE, cover and environmental variables for the 10m2 plots
+# - gamma_data: diversity, ENSPIE, cover and environmental variables for the
+#    100m2 plots
+# - beta_data: diversity, ENSPIE, cover and environmental variables for the
+#    beta scale
+source("analysis/helper_scripts/prepare_data.R")
 
-# SR - species richness
-# ENSPIE - evenness measure calculated as inverse Simpson using species cover
-# cover - is cumulative plant cover
+# Turn mowing variable into a factor
+alpha_data <- mutate(alpha_data, mowing = factor(mowing))
+beta_data <- mutate(beta_data, mowing = factor(mowing))
+gamma_data <- mutate(gamma_data, mowing = factor(mowing))
 
-# "data/alpha_beta_gamma_community_variabl.csv" combines all diversity measures and plant cover
-# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots,
-# thus "series" (i.e. 100m2 plots), nested in dataset (separate vegetation survey campaign)
-# are fitted as a random effect
-# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the 10m2 plots)
-# beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
-
-# Read climate data and compund climate variable from PCA analysis in "1_prepare_data/ PCA_environment.R"
-climate_PCA <- read_csv("data/climate_PCA.csv")
-
-# Read all environmental data
-header <- read_csv("data/Environm_variabl.csv") %>%
-  full_join(
-    read_csv("data/climate_PCA.csv"),
-    by = "series"
-  )
-
-# mean per series (per 100m2 plots)
-header_mean <- header %>%
-  select(c(series, zonality, habitat_broad,
-           where(is.numeric))) %>%
-  group_by(series, zonality, habitat_broad) %>%
-  summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) %>%
-  ungroup()
-
-# Prepare subset of data for alpha scale (10 m2 plots) -------------------------
-
-alpha <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
-  filter(type == "alpha") %>%
-  unite("metric", c(type, scale, metric), sep = "_") %>%
-  pivot_wider(names_from = metric, values_from = value) %>%
-  full_join(header,
-            by = c("dataset", "plotID", "series", "subplot")
-  ) %>%
-  mutate(dataset = factor(dataset))
-
-str(alpha)
-
-# Remove NAs and select only needed variables
-alpha_data <- alpha %>%
-  dplyr::select(alpha_10_div, alpha_10_ENSPIE,
-                pca1_clima,
-                grazing_intencity, mowing,
-                cover_litter,
-                Tem_range, Prec_Varieb,
-                pH, Corg_percent,
-                dataset, series, habitat_broad,
-                subplot) %>%
-  mutate(mowing = factor(mowing)) %>%
-  mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
-                                                "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na()
-
-str(alpha_data)
-
-# Prepare subset of data for gamma scale (100 m2 plots) -------------------------
-beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
-  filter(type == "gamma" | type == "beta") %>%
-  unite("metric", c(type, scale, metric), sep = "_") %>%
-  pivot_wider(names_from = metric, values_from = value) %>%
-  full_join(header_mean, by = c("dataset", "series")) %>%
-  mutate(dataset = factor(dataset))
-
-str(beta_gamma)
-
-# selected variables, removed NAs
-gamma_data <- beta_gamma %>%
-  dplyr::select(gamma_100_div, gamma_100_ENSPIE,
-                pca1_clima,
-                grazing_intencity, mowing,
-                cover_litter,
-                Tem_range, Prec_Varieb, Temprt, Precipt,
-                pH, Corg_percent,
-                dataset, series, habitat_broad, zonality) %>%
-  mutate(habitat = fct_relevel(habitat_broad,
-                               c("saline", "complex", "dry",
-                                 "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na()
-
-str(gamma_data)
-
-
-# Remove NAs and select only needed variables
-beta_data <- beta_gamma %>%
-  dplyr::select(beta_100_div, beta_100_ENSPIE,
-                pca1_clima,
-                grazing_intencity, mowing,
-                # cover_shrub_total,     inclination,
-                cover_litter,
-                Tem_range, Prec_Varieb,
-                pH, Corg_percent,
-                dataset, series, habitat_broad, zonality) %>%
-  mutate(mowing = factor(mowing)) %>%
-  mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
-                                                "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na()
-
+# Check how the dataset looks like
+alpha_data
+beta_data
+gamma_data
 
 # 1) Get the predictions for the final selected models ------------------------
 
@@ -393,7 +308,7 @@ Fig_grazing_10 <- ggplot(grazing_pred_10m, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.4, fill = "#A6CEE3") +
   geom_point(data = alpha_data,
              aes(grazing_intencity, alpha_10_div, col = habitat), size = 1, alpha = 0.8,
-             pch = 19, position = position_jitter(w = 0.2)) +
+             pch = 19, position = position_jitter(width = 0.2)) +
   scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Grazing intencity') +
   geom_line(linetype = 5, linewidth = 0.5, col = "#50A0C8")
@@ -403,7 +318,7 @@ Fig_grazing_100 <- ggplot(grazing_pred_100m, aes(x, predicted)) +
               alpha = 0.1, fill = "#D6604D") +
   geom_point(data = gamma_data,
              aes(grazing_intencity, gamma_100_div, col = habitat), size = 1, alpha = 0.8,
-             pch = 19, position = position_jitter(w = 0.2)) +
+             pch = 19, position = position_jitter(width = 0.2)) +
   scale_color_manual(values = habitat_colors) +
   labs(y = "Species richness", x = 'Grazing intencity') +
   geom_line(data = grazing_pred_100m, linetype = 1, linewidth = 0.5, col = "#D6604D")
@@ -517,7 +432,7 @@ Fig_grazing_10_ENSPIE <- ggplot(grazing_pred_10m_Ensp, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.4, fill = "#A6CEE3") +
   geom_point(data = alpha_data,
              aes(grazing_intencity, alpha_10_ENSPIE, col = habitat), size = 1, alpha = 0.8,
-             pch = 19, position = position_jitter(w = 0.2)) +
+             pch = 19, position = position_jitter(width = 0.2)) +
   scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Grazing intencity') +
   geom_line(linetype = 5, linewidth = 0.5, col = "#50A0C8")
@@ -527,7 +442,7 @@ Fig_grazing_100_ENSPIE <- ggplot(grazing_pred_100m_Ensp, aes(x, predicted)) +
               alpha = 0.1, fill = "#D6604D") +
   geom_point(data = gamma_data,
              aes(grazing_intencity, gamma_100_ENSPIE, col = habitat), size = 1, alpha = 0.8,
-             pch = 19, position = position_jitter(w = 0.2)) +
+             pch = 19, position = position_jitter(width = 0.2)) +
   scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Grazing intencity') +
   geom_line(data = grazing_pred_100m_Ensp, linetype = 1, linewidth = 0.5, col = "#D6604D")
