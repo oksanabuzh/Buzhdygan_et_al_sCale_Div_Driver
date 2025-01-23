@@ -38,7 +38,7 @@ climate_PCA <- read_csv("data/climate_PCA.csv")
 # Read all environmental data
 header <- read_csv("data/Environm_variabl.csv") %>%
   full_join(
-    read.csv("data/climate_PCA.csv"),
+    read_csv("data/climate_PCA.csv"),
     by = "series"
   )
 
@@ -384,7 +384,7 @@ R <- R2 %>%
   filter(Effect == "poly(Prec_Varieb, 2)1" | Effect == "poly(Prec_Varieb, 2)2" | Effect == "Model") %>%
   bind_rows(R1 %>% filter(!Effect == "Model"))
 
-write.csv(R, file = "results/R2_alpha_SR.csv")
+write_csv(R, file = "results/R2_alpha_SR.csv")
 
 #-----------------------------------------------------------------------------#
 # (1) ENSPIE -------------------------------------------------------
@@ -671,4 +671,4 @@ R_ENSPIE <- R2_ENSPIE %>%
     filter(!Effect == "Model")
   )
 
-write.csv(R_ENSPIE, file = "results/R2_alpha_ENSPIE.csv")
+write_csv(R_ENSPIE, file = "results/R2_alpha_ENSPIE.csv")

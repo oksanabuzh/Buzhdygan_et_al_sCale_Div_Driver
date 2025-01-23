@@ -52,7 +52,7 @@ climate_PCA <- read_csv("data/climate_PCA.csv")
 # Read all environmental data
 header <- read_csv("data/Environm_variabl.csv") %>%
   full_join(
-    read.csv("data/climate_PCA.csv"),
+    read_csv("data/climate_PCA.csv"),
     by = "series"
   )
 

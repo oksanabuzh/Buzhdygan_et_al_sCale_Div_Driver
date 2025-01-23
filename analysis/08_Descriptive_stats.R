@@ -43,12 +43,12 @@ set_theme(base = theme_bw(),
 # beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
 
 # Read climate data and compund climate variable from PCA analysis in "1_prepare_data/ PCA_environment.R"
-climate_PCA <- read.csv("data/climate_PCA.csv")
+climate_PCA <- read_csv("data/climate_PCA.csv")
 
 # Read all environmental data
 header <- read_csv("data/Environm_variabl.csv") %>%
   full_join(
-    read.csv("data/climate_PCA.csv"),
+    read_csv("data/climate_PCA.csv"),
     by = "series"
   )
 
