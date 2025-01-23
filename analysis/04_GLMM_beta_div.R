@@ -20,16 +20,6 @@ habitat_colors = c(
   fringe = "#00B200",
   alpine = "#006600")
 
-# Set theme for the model plots
-set_theme(base = theme_bw(),
-  axis.textsize.x = 1,
-  axis.textsize.y = 1,
-  axis.textcolor = "black",
-  axis.title.color = "black",
-  axis.title.size = 1.4,
-  legend.pos = "None",
-  geom.linetype = 2)
-
 # Read and prepare data --------------------------------------------
 
 # SR - species richness
@@ -229,9 +219,8 @@ clima_pred_beta <- get_model_data(m1_1, type = "pred", terms = "pca1_clima[-1.2:
 Fig.betaSR_clima <- ggplot(clima_pred_beta, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = beta_data,
-    aes(pca1_clima, beta_100_div, fill = habitat, col = habitat),
-    size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) +
+    aes(pca1_clima, beta_100_div, col = habitat),
+    size = 1, alpha = 0.8, pch = 19) +
   scale_color_manual(values = habitat_colors) +
   labs(y = "beta SR", x = 'Climate gradient') +
   geom_line(linetype = 5, linewidth = 0.5, col = "#00AC7F")
@@ -245,12 +234,11 @@ Humus_pred_beta <- get_model_data(m1_1, type = "pred", terms = "Corg_percent[0:9
 Fig.betaSR_soilC <- ggplot(Humus_pred_beta, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = beta_data,
-    aes(Corg_percent, beta_100_div, fill = habitat, col = habitat),
-    size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) +
+    aes(Corg_percent, beta_100_div, col = habitat),
+    size = 1, alpha = 0.8, pch = 19) +
   scale_color_manual(values = habitat_colors) +
   labs(y = "beta SR", x = 'Soil C') +
-  geom_line(linetype = 5, size = 0.5, col = "#00AC7F")
+  geom_line(linetype = 5, linewidth = 0.5, col = "#00AC7F")
 
 Fig.betaSR_soilC
 
@@ -261,12 +249,11 @@ Litter_pred_beta <- get_model_data(m1_1, type = "pred", terms = "cover_litter[0:
 Fig.betaSR_Litter <- ggplot(Litter_pred_beta, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = beta_data,
-    aes(cover_litter, beta_100_div, fill = habitat, col = habitat),
-    size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) +
+    aes(cover_litter, beta_100_div, col = habitat),
+    size = 1, alpha = 0.8, pch = 19) +
   scale_color_manual(values = habitat_colors) +
   labs(y = "beta SR", x = 'Litter cover') +
-  geom_line(linetype = 1, size = 1, col = "#00AC7F")
+  geom_line(linetype = 1, linewidth = 1, col = "#00AC7F")
 
 Fig.betaSR_Litter
 
@@ -276,12 +263,11 @@ pH_pred_beta <- get_model_data(m1_1, type = "pred", terms = "pH[3.7:9, by=.001]"
 Fig.betaSR_soil.pH <- ggplot(pH_pred_beta, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = beta_data,
-    aes(pH, beta_100_div, fill = habitat, col = habitat),
-    size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) +
+    aes(pH, beta_100_div, col = habitat),
+    size = 1, alpha = 0.8, pch = 19) +
   scale_color_manual(values = habitat_colors) +
   labs(y = "beta SR", x = 'Soil pH') +
-  geom_line(linetype = 1, size = 1, col = "#00AC7F")
+  geom_line(linetype = 1, linewidth = 1, col = "#00AC7F")
 
 Fig.betaSR_soil.pH
 
@@ -291,11 +277,10 @@ grazing_pred_beta <- get_model_data(m1_1, type = "pred", terms = "grazing_intenc
 Fig.betaSR_grazing <- ggplot(grazing_pred_beta, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = beta_data,
-    aes(grazing_intencity, beta_100_div, fill = habitat, col = habitat), size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) +
+    aes(grazing_intencity, beta_100_div, col = habitat), size = 1, alpha = 0.8, pch = 19) +
   scale_color_manual(values = habitat_colors) +
   labs(y = "beta SR", x = 'Grazing intencity') +
-  geom_line(linetype = 5, size = 0.5, col = "#00AC7F")
+  geom_line(linetype = 5, linewidth = 0.5, col = "#00AC7F")
 
 Fig.betaSR_grazing
 
@@ -304,9 +289,9 @@ Fig.betaSR_grazing
 Fig.betaSR_mowing <- ggplot(beta_data, aes(mowing, beta_100_div)) +
   geom_boxplot(color = "#00AC7F") +
   labs(y = "beta SR", x = 'Mowing') +
-  geom_point(aes(color = habitat, fill = habitat), pch = 21, position = position_jitter(w = 0.1), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors) +
-  scale_fill_manual(values = habitat_colors)
+  geom_point(aes(color = habitat), pch = 19, 
+             position = position_jitter(width = 0.1), size = 3, alpha = 0.8) +
+  scale_color_manual(values = habitat_colors)
 
 Fig.betaSR_mowing
 
@@ -316,23 +301,12 @@ precipCV_pred_beta <- get_model_data(m2_1, type = "pred", terms = "Prec_Varieb")
 
 Fig.betaSR_precip.CV <- ggplot(precipCV_pred_beta, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = beta_data, aes(Prec_Varieb, beta_100_div, fill = habitat, col = habitat), size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = beta_data, aes(Prec_Varieb, beta_100_div, col = habitat), size = 1, alpha = 0.8, pch = 19) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = "beta SR", x = 'Precipitation variability') +
-  geom_line(linetype = 1, size = 1, col = "#00AC7F")
+  geom_line(linetype = 1, linewidth = 1, col = "#00AC7F")
 
 Fig.betaSR_precip.CV
-
-# Combine plots ----------------------------------------------------------------
-# for beta SR (100 m^2)
-
-Fig.betaSR_clima +
-  Fig.betaSR_precip.CV +
-  Fig.betaSR_soilC +
-  Fig.betaSR_soil.pH +
-  Fig.betaSR_Litter +
-  Fig.betaSR_grazing +
-  plot_layout(ncol = 3)
 
 # Final statistics ------------------------------------------------------------
 Anova(m1_1)
@@ -495,35 +469,37 @@ clima_pred_beta_ENSPIE <- get_model_data(m1_1_ENSPIE, type = "pred", terms = "pc
 Fig.betaENSPIE_clima <- ggplot(clima_pred_beta_ENSPIE, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = beta_data,
-    aes(pca1_clima, beta_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) +
+    aes(pca1_clima, beta_100_ENSPIE, col = habitat),
+    size = 1, alpha = 0.8, pch = 19) +
   scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Climate gradient') +
-  geom_line(linetype = 1, size = 0.5, col = "#00AC7F")
+  geom_line(linetype = 1, linewidth = 0.5, col = "#00AC7F")
 
 Fig.betaENSPIE_clima
 
 # Soil C plot -----------------------------------------------------------------
+
 Humus_pred_beta_ENSPIE <- get_model_data(m1_1_ENSPIE, type = "pred", terms = "Corg_percent[0:9.5, by=.001]")
 
 Fig.betaENSPIE_soilC <- ggplot(Humus_pred_beta_ENSPIE, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = beta_data, aes(Corg_percent, beta_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = beta_data, aes(Corg_percent, beta_100_ENSPIE, col = habitat), size = 1, alpha = 0.8, pch = 19) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Soil C') +
-  geom_line(linetype = 1, size = 1, col = "#00AC7F")
+  geom_line(linetype = 1, linewidth = 1, col = "#00AC7F")
 
 Fig.betaENSPIE_soilC
 
 # Litter % plot --------------------------------------------------------------
+
 Litter_pred_beta_ENSPIE <- get_model_data(m1_1_ENSPIE, type = "pred", terms = "cover_litter[0:100, by=0.01]")
 
 Fig.betaENSPIE_Litter <- ggplot(Litter_pred_beta_ENSPIE, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = beta_data, aes(cover_litter, beta_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = beta_data, aes(cover_litter, beta_100_ENSPIE, col = habitat), size = 1, alpha = 0.8, pch = 19) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Litter cover') +
-  geom_line(linetype = 1, size = 1, col = "#00AC7F")
+  geom_line(linetype = 1, linewidth = 1, col = "#00AC7F")
 
 Fig.betaENSPIE_Litter
 
@@ -532,10 +508,10 @@ pH_pred_beta_ENSPIE <- get_model_data(m1_1_ENSPIE, type = "pred", terms = "pH[3.
 
 Fig.betaENSPIE_soil.pH <- ggplot(pH_pred_beta_ENSPIE, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = beta_data, aes(pH, beta_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = beta_data, aes(pH, beta_100_ENSPIE, col = habitat), size = 1, alpha = 0.8, pch = 19) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Soil pH') +
-  geom_line(linetype = 5, size = 0.5, col = "#00AC7F")
+  geom_line(linetype = 5, linewidth = 0.5, col = "#00AC7F")
 
 Fig.betaENSPIE_soil.pH
 
@@ -544,10 +520,10 @@ grazing_pred_beta_ENSPIE <- get_model_data(m1_1_ENSPIE, type = "pred", terms = "
 
 Fig.betaENSPIE_grazing <- ggplot(grazing_pred_beta_ENSPIE, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = beta_data, aes(grazing_intencity, beta_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = beta_data, aes(grazing_intencity, beta_100_ENSPIE, col = habitat), size = 1, alpha = 0.8, pch = 19) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Grazing intencity') +
-  geom_line(linetype = 5, size = 0.5, col = "#00AC7F")
+  geom_line(linetype = 5, linewidth = 0.5, col = "#00AC7F")
 
 Fig.betaENSPIE_grazing
 
@@ -556,9 +532,8 @@ Fig.betaENSPIE_grazing
 Fig.betaENSPIE_mowing <- ggplot(beta_data, aes(mowing, beta_100_ENSPIE)) +
   geom_boxplot(color = "#00AC7F") +
   labs(y = expression(paste("ENS"[PIE])), x = 'Mowing') +
-  geom_point(aes(color = habitat, fill = habitat), pch = 21, position = position_jitter(w = 0.1), size = 3, alpha = 0.8) +
-  scale_color_manual(values = habitat_colors) + scale_fill_manual(values = habitat_colors) +
-  labs(color = 'Habitat type')
+  geom_point(aes(color = habitat), pch = 19, position = position_jitter(width = 0.1), size = 3, alpha = 0.8) +
+  scale_color_manual(values = habitat_colors)
 
 Fig.betaENSPIE_mowing
 
@@ -567,37 +542,12 @@ precipCV_pred_beta_ENSPIE <- get_model_data(m2_1_ENSPIE, type = "pred", terms = 
 
 Fig.betaENSPIE_precip.CV <- ggplot(precipCV_pred_beta_ENSPIE, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = beta_data, aes(Prec_Varieb, beta_100_ENSPIE, fill = habitat, col = habitat), size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + scale_color_manual(values = habitat_colors) +
+  geom_point(data = beta_data, aes(Prec_Varieb, beta_100_ENSPIE, col = habitat), size = 1, alpha = 0.8, pch = 19) +
+  scale_color_manual(values = habitat_colors) +
   labs(y = expression(paste("ENS"[PIE])), x = 'Precipitation CV') +
-  geom_line(linetype = 5, size = 0.5, col = "#00AC7F")
+  geom_line(linetype = 5, linewidth = 0.5, col = "#00AC7F")
 
 Fig.betaENSPIE_precip.CV
-
-# Combine plots ---------------------------------------------------------------
-
-# for beta ENSPIE (100 m^2)
-
-Fig.betaENSPIE_clima +
-  Fig.betaENSPIE_precip.CV +
-  Fig.betaENSPIE_soilC +
-  Fig.betaENSPIE_soil.pH +
-  Fig.betaENSPIE_Litter +
-  Fig.betaENSPIE_grazing +
-  plot_layout(ncol = 3)
-
-# combine ENSPIE with SR plots
-Fig.betaSR_clima + Fig.betaENSPIE_clima +
-  Fig.betaSR_precip.CV + Fig.betaENSPIE_precip.CV +
-  Fig.betaSR_soilC + Fig.betaENSPIE_soilC +
-  Fig.betaSR_soil.pH + Fig.betaENSPIE_soil.pH +
-  Fig.betaSR_Litter + Fig.betaENSPIE_Litter +
-  Fig.betaSR_grazing + Fig.betaENSPIE_grazing +
-  plot_layout(ncol = 2) +
-  plot_annotation(tag_levels = 'a') &
-  theme(plot.tag = element_text(size = 14, face = 'bold'), plot.tag.position = c(0.22, 0.95),
-    plot.margin = unit(c(0, 0, 0, 0), "pt"))
-
 # final statistics -----------------------------------------------------------
 Anova(m1_1_ENSPIE)
 Anova(m2_1_ENSPIE)
