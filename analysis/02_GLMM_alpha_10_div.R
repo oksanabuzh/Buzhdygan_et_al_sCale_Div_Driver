@@ -28,6 +28,9 @@ habitat_colors = c(
 #    beta scale
 source("analysis/helper_scripts/prepare_data.R")
 
+# Turn mowing variable into a factor for plotting
+alpha_data <- mutate(alpha_data, mowing = factor(mowing))
+
 # Check how the dataset looks like
 alpha_data
 
