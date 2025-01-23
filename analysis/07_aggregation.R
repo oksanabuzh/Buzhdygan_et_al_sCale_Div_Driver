@@ -31,72 +31,32 @@ set_theme(base = theme_bw(),
 
 
 # Read and prepare data -------------------------------------------------------
+# This script prepared the following necessary data for all analyses
+# - alpha_data: diversity, ENSPIE, cover and environmental variables for the 10m2 plots
+# - gamma_data: diversity, ENSPIE, cover and environmental variables for the 
+#    100m2 plots
+# - beta_data: diversity, ENSPIE, cover and environmental variables for the
+#    beta scale
+source("analysis/helper_scripts/prepare_data.R")
 
-# SR - species richness
-# ENSPIE - evenness measure calculated as inverse Simpson using species cover
-# cover - is cumulative plant cover
+# Turn mowing variable into a factor
+beta_data <- mutate(beta_data, mowing = factor(mowing))
 
-# "data/alpha_beta_gamma_community_variabl.csv" combines all diversity measures and plant cover
-# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots,
-# thus "series" (i.e. 100m2 plots), nested in dataset (separate vegetation survey campaign)
-# are fitted as a random effect
-# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the 10m2 plots)
-# beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
-
-# Read climate data and compund climate variable from PCA analysis in "1_prepare_data/ PCA_environment.R"
-climate_PCA <- read_csv("data/climate_PCA.csv")
-
-# Read all environmental data
-header <- read_csv("data/Environm_variabl.csv") %>%
-  full_join(
-    read_csv("data/climate_PCA.csv"),
-    by = "series"
-  )
+# Check how the dataset looks like
+beta_data
 
 # Read aggregation data
 aggregation <- read_csv("data/aggregation.csv")
 
-# mean per series (per 100m2 plots)
-header_mean <- header %>%
-  select(c(series, lat, lon, zonality, habitat_broad,
-    where(is.numeric))) %>%
-  group_by(series, zonality, habitat_broad) %>%
-  summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) %>%
-  ungroup()
-
-# Prepare subset of data for beta scale --------------------------------------
-beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
-  filter(type == "gamma" | type == "beta") %>%
-  unite("metric", c(type, scale, metric), sep = "_") %>%
-  pivot_wider(names_from = metric, values_from = value) %>%
-  full_join(header_mean, by = c("dataset", "series")) %>%
-  mutate(dataset = factor(dataset))
-
-beta_data <- beta_gamma %>%
-  dplyr::select(dataset, series, habitat_broad, zonality,
-    gamma_100_div, gamma_100_ENSPIE, gamma_100_cover,
-    beta_100_div, beta_100_ENSPIE,
-    lat, lon, pca1_clima,
-    grazing_intencity, mowing,
-    # cover_shrub_total,     inclination,
-    cover_litter,
-    Tem_range, Prec_Varieb,
-    pH, Corg_percent,
-  ) %>%
-  mutate(mowing = factor(mowing)) %>%
-  mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
-    "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na %>%
-  left_join(aggregation, by = join_by(series)) %>%
+# Join aggregation data to beta data
+beta_data <- left_join(beta_data, aggregation, by = "series") |> 
   rename(aggregation = beta.BRAY.BAL)
-
-str(beta_data)
-summary(beta_data)
-
 
 # Check correlation between variables -----------------------------------------
 beta_data %>%
-  dplyr::select(gamma_100_div, gamma_100_ENSPIE, gamma_100_cover, ,
+  # join with gamma data to check correlation
+  left_join(gamma_data %>% select(series, gamma_100_ENSPIE, gamma_100_div), by = "series") %>%
+  dplyr::select(gamma_100_div, gamma_100_ENSPIE, gamma_100_cover, 
     beta_100_div, beta_100_ENSPIE, aggregation) %>%
   cor() |>
   ggcorrplot::ggcorrplot(
