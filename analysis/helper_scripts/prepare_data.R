@@ -36,70 +36,79 @@ header_mean <- header %>%
 
 # Prepare subset of data for alpha scale (10 m2 plots) -------------------------
 
-alpha <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
+alpha_data <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   filter(type == "alpha") %>%
   unite("metric", c(type, scale, metric), sep = "_") %>%
   pivot_wider(names_from = metric, values_from = value) %>%
   full_join(header,
             by = c("dataset", "plotID", "series", "subplot")
-  ) %>%
-  mutate(dataset = factor(dataset))
+  )
 
 # Remove NAs and select only needed variables
-alpha_data <- alpha %>%
-  dplyr::select(alpha_10_div, alpha_10_ENSPIE,
+alpha_data <- alpha_data %>%
+  dplyr::select(alpha_10_div, alpha_10_ENSPIE, alpha_10_cover,
                 pca1_clima,
                 grazing_intencity, mowing,
                 cover_litter,
                 Tem_range, Prec_Varieb,
                 pH, Corg_percent,
+                lat, lon,
                 dataset, series, habitat_broad,
                 subplot) %>%
-  mutate(mowing = factor(mowing)) %>%
-  mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
+  mutate(mowing = factor(mowing),
+         dataset = factor(dataset),
+  habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
                                                 "wet", "mesic", "fringe", "alpine"))) %>%
   drop_na()
 
-str(alpha_data)
-
 # Prepare subset of data for gamma scale (100 m2 plots) -------------------------
-beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
-  filter(type == "gamma" | type == "beta") %>%
+gamma_data <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
+  filter(type == "gamma") %>%
   unite("metric", c(type, scale, metric), sep = "_") %>%
   pivot_wider(names_from = metric, values_from = value) %>%
-  full_join(header_mean, by = c("dataset", "series")) %>%
-  mutate(dataset = factor(dataset))
-
-str(beta_gamma)
+  full_join(header_mean, by = c("dataset", "series"))
 
 # selected variables, removed NAs
-gamma_data <- beta_gamma %>%
+gamma_data <- gamma_data %>%
   dplyr::select(gamma_100_div, gamma_100_ENSPIE,
+                gamma_100_cover,
                 pca1_clima,
                 grazing_intencity, mowing,
                 cover_litter,
+                lat, lon,
                 Tem_range, Prec_Varieb, Temprt, Precipt,
                 pH, Corg_percent,
                 dataset, series, habitat_broad, zonality) %>%
-  mutate(habitat = fct_relevel(habitat_broad,
+  mutate(
+    mowing = factor(mowing),
+    dataset = factor(dataset),
+    habitat = fct_relevel(habitat_broad,
                                c("saline", "complex", "dry",
                                  "wet", "mesic", "fringe", "alpine"))) %>%
   drop_na()
 
-str(gamma_data)
+# Prepare subset of data for beta scale (100 m2 plots) -------------------------
+beta_data <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
+  filter(type == "gamma" | type == "beta") %>%
+  unite("metric", c(type, scale, metric), sep = "_") %>%
+  pivot_wider(names_from = metric, values_from = value) %>%
+  full_join(header_mean, by = c("dataset", "series"))
 
-
-# Remove NAs and select only needed variables
-beta_data <- beta_gamma %>%
+# selected variables, removed NAs
+beta_data <- beta_data %>%
   dplyr::select(beta_100_div, beta_100_ENSPIE,
+                gamma_100_cover,
                 pca1_clima,
                 grazing_intencity, mowing,
-                # cover_shrub_total,     inclination,
                 cover_litter,
-                Tem_range, Prec_Varieb,
+                lat, lon,
+                Tem_range, Prec_Varieb, Temprt, Precipt,
                 pH, Corg_percent,
                 dataset, series, habitat_broad, zonality) %>%
-  mutate(mowing = factor(mowing)) %>%
-  mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
-                                                "wet", "mesic", "fringe", "alpine"))) %>%
+  mutate(
+    mowing = factor(mowing),
+    dataset = factor(dataset),
+    habitat = fct_relevel(habitat_broad,
+                          c("saline", "complex", "dry",
+                            "wet", "mesic", "fringe", "alpine"))) %>%
   drop_na()
