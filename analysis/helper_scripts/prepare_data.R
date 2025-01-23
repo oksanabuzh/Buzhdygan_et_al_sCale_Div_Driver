@@ -21,15 +21,11 @@ climate_PCA <- read_csv("data/climate_PCA.csv")
 
 # Read all environmental data
 header <- read_csv("data/Environm_variabl.csv") %>%
-  full_join(
-    read_csv("data/climate_PCA.csv"),
-    by = "series"
-  )
+  full_join(read_csv("data/climate_PCA.csv"), by = "series")
 
 # mean per series (per 100m2 plots)
 header_mean <- header %>%
-  select(c(series, zonality, habitat_broad,
-           where(is.numeric))) %>%
+  select(c(series, zonality, habitat_broad, where(is.numeric))) %>%
   group_by(series, zonality, habitat_broad) %>%
   summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) %>%
   ungroup()
@@ -40,25 +36,34 @@ alpha_data <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
   filter(type == "alpha") %>%
   unite("metric", c(type, scale, metric), sep = "_") %>%
   pivot_wider(names_from = metric, values_from = value) %>%
-  full_join(header,
-            by = c("dataset", "plotID", "series", "subplot")
-  )
+  full_join(header, by = c("dataset", "plotID", "series", "subplot"))
 
 # Remove NAs and select only needed variables
 alpha_data <- alpha_data %>%
-  dplyr::select(alpha_10_div, alpha_10_ENSPIE, alpha_10_cover,
-                pca1_clima,
-                grazing_intencity, mowing,
-                cover_litter,
-                Tem_range, Prec_Varieb,
-                pH, Corg_percent,
-                lat, lon,
-                dataset, series, habitat_broad,
-                subplot) %>%
-  mutate(mowing = factor(mowing),
-         dataset = factor(dataset),
-  habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
-                                                "wet", "mesic", "fringe", "alpine"))) %>%
+  dplyr::select(
+    alpha_10_div,
+    alpha_10_ENSPIE,
+    alpha_10_cover,
+    pca1_clima,
+    grazing_intencity,
+    mowing,
+    cover_litter,
+    Tem_range,
+    Prec_Varieb,
+    pH,
+    Corg_percent,
+    lat,
+    lon,
+    dataset,
+    series,
+    habitat_broad,
+    subplot
+  ) %>%
+  mutate(dataset = factor(dataset),
+         habitat = fct_relevel(
+           habitat_broad,
+           c("saline", "complex", "dry", "wet", "mesic", "fringe", "alpine")
+         )) %>%
   drop_na()
 
 # Prepare subset of data for gamma scale (100 m2 plots) -------------------------
@@ -70,21 +75,32 @@ gamma_data <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
 
 # selected variables, removed NAs
 gamma_data <- gamma_data %>%
-  dplyr::select(gamma_100_div, gamma_100_ENSPIE,
-                gamma_100_cover,
-                pca1_clima,
-                grazing_intencity, mowing,
-                cover_litter,
-                lat, lon,
-                Tem_range, Prec_Varieb, Temprt, Precipt,
-                pH, Corg_percent,
-                dataset, series, habitat_broad, zonality) %>%
-  mutate(
-    mowing = factor(mowing),
-    dataset = factor(dataset),
-    habitat = fct_relevel(habitat_broad,
-                               c("saline", "complex", "dry",
-                                 "wet", "mesic", "fringe", "alpine"))) %>%
+  dplyr::select(
+    gamma_100_div,
+    gamma_100_ENSPIE,
+    gamma_100_cover,
+    pca1_clima,
+    grazing_intencity,
+    mowing,
+    cover_litter,
+    lat,
+    lon,
+    Tem_range,
+    Prec_Varieb,
+    Temprt,
+    Precipt,
+    pH,
+    Corg_percent,
+    dataset,
+    series,
+    habitat_broad,
+    zonality
+  ) %>%
+  mutate(dataset = factor(dataset),
+         habitat = fct_relevel(
+           habitat_broad,
+           c("saline", "complex", "dry", "wet", "mesic", "fringe", "alpine")
+         )) %>%
   drop_na()
 
 # Prepare subset of data for beta scale (100 m2 plots) -------------------------
@@ -96,19 +112,30 @@ beta_data <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
 
 # selected variables, removed NAs
 beta_data <- beta_data %>%
-  dplyr::select(beta_100_div, beta_100_ENSPIE,
-                gamma_100_cover,
-                pca1_clima,
-                grazing_intencity, mowing,
-                cover_litter,
-                lat, lon,
-                Tem_range, Prec_Varieb, Temprt, Precipt,
-                pH, Corg_percent,
-                dataset, series, habitat_broad, zonality) %>%
-  mutate(
-    mowing = factor(mowing),
-    dataset = factor(dataset),
-    habitat = fct_relevel(habitat_broad,
-                          c("saline", "complex", "dry",
-                            "wet", "mesic", "fringe", "alpine"))) %>%
+  dplyr::select(
+    beta_100_div,
+    beta_100_ENSPIE,
+    gamma_100_cover,
+    pca1_clima,
+    grazing_intencity,
+    mowing,
+    cover_litter,
+    lat,
+    lon,
+    Tem_range,
+    Prec_Varieb,
+    Temprt,
+    Precipt,
+    pH,
+    Corg_percent,
+    dataset,
+    series,
+    habitat_broad,
+    zonality
+  ) %>%
+  mutate(dataset = factor(dataset),
+         habitat = fct_relevel(
+           habitat_broad,
+           c("saline", "complex", "dry", "wet", "mesic", "fringe", "alpine")
+         )) %>%
   drop_na()
