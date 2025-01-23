@@ -10,25 +10,43 @@ But the files can all be run individually and are independent of each other.
 
 Performs PCA analysis for creating the composite variable of climate gradient, consisting of increasing precipitation and decreasing temperature.
 
+- Input: `data/Environm_variabl.csv`
+- Output: `data/climate_PCA.csv`
+
 ### `02_GLMM_alpha_10_div.R`
 
 Performs GLMM analysis for the 10 m2 plots for diversity measures (SR - species richness, ENSPIE - evenness).
+
+- Input: `data/Environm_variabl.csv`, `data/climate_PCA.csv`, `data/alpha_beta_gamma_community_variabl.csv`
+- Output: `results/R2_alpha_SR.csv`, `results/R2_alpha_ENSPIE.csv`
 
 ### `03_GLMM_gamma_100_div.R`
 
 Performs GLMM analysis for the 100 m2 plots for diversity measures.
 
+- Input: `data/Environm_variabl.csv`, `data/climate_PCA.csv`, `data/alpha_beta_gamma_community_variabl.csv`
+- Output: `results/R2_gamma_SR.csv`, `results/R2_gamma_ENSPIE.csv`
+
 ### `04_GLMM_beta_div.R`
 
 Performs GLMM analysis for beta diversity.
+
+- Input: `data/Environm_variabl.csv`, `data/climate_PCA.csv`, `data/alpha_beta_gamma_community_variabl.csv`
+- Output: `results/R2_beta_SR.csv`, `results/R2_beta_ENSPIE.csv`
 
 ### `05_a_Stand_Effect_size_alpha.R`
 
 Obtains the standardized coefficients of the predictor effects on diversity measures at the 10 m2 plots.
 
+- Input: `data/Environm_variabl.csv`, `data/climate_PCA.csv`, `data/alpha_beta_gamma_community_variabl.csv`
+- Output: `results/alpha_st.eff.csv`
+
 ### `05_b_Stand_Effect_size_gamma.R`
 
 Obtains the standardized coefficients of the predictor effects on diversity measures at the 100 m2 plots.
+
+- Input: `data/Environm_variabl.csv`, `data/climate_PCA.csv`, `data/alpha_beta_gamma_community_variabl.csv`
+- Output: `results/gamma_st.eff.csv`
 
 ### `06_ResidSpatCorr.R`
 
@@ -37,6 +55,7 @@ Tests residual spatial autocorrelation.
 ### `07_aggregation.R`
 
 Performs LMM analysis for spatial aggregation as response variable (100-m2 plots).
+
 
 ### `08_Descriptive_stats.R`
 
