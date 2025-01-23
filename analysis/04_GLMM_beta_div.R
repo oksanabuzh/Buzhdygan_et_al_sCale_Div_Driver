@@ -21,60 +21,16 @@ habitat_colors = c(
   alpine = "#006600")
 
 # Read and prepare data --------------------------------------------
+# This script prepared the following necessary data for all analyses
+# - alpha_data: diversity, ENSPIE, cover and environmental variables for the 10m2 plots
+# - gamma_data: diversity, ENSPIE, cover and environmental variables for the 
+#    100m2 plots
+# - beta_data: diversity, ENSPIE, cover and environmental variables for the
+#    beta scale
+source("analysis/helper_scripts/prepare_data.R")
 
-# SR - species richness
-# ENSPIE - evenness measure calculated as inverse Simpson using species cover
-# cover - is cumulative plant cover
-
-# "data/alpha_beta_gamma_community_variabl.csv" combines all diversity measures and plant cover
-# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots,
-## thus "series" (i.e. 100m2 plots), nested in dataset (separate vegetation survey campaign)
-## are fitted as a random effect
-# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the 10m2 plots)
-# beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
-
-# Read climate data and compund climate variable from PCA analysis in "1_prepare_data/ PCA_environment.R"
-climate_PCA <- read_csv("data/climate_PCA.csv")
-
-# Read all environmental data
-header <- read_csv("data/Environm_variabl.csv") %>%
-  full_join(
-    read_csv("data/climate_PCA.csv"),
-    by = "series"
-  )
-
-# Calulate mean header data to combine two corners within each plot into one value
-header_mean <- header %>%
-  select(c(series, zonality, habitat_broad,
-    where(is.numeric))) %>%
-  group_by(series, zonality, habitat_broad) %>%
-  summarize(across(where(is.numeric), \(x) mean(x, na.rm = TRUE))) %>%
-  ungroup()
-
-# Prepare subset of data for beta scale -------------------------
-
-beta_gamma <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
-  filter(type == "gamma" | type == "beta") %>%
-  unite("metric", c(type, scale, metric), sep = "_") %>%
-  pivot_wider(names_from = metric, values_from = value) %>%
-  full_join(header_mean, by = c("dataset", "series")) %>%
-  mutate(dataset = factor(dataset))
-
-# Remove NAs and select only needed variables
-beta_data <- beta_gamma %>%
-  dplyr::select(beta_100_div, beta_100_ENSPIE,
-    pca1_clima,
-    grazing_intencity, mowing,
-    # cover_shrub_total,     inclination,
-    cover_litter,
-    Tem_range, Prec_Varieb,
-    pH, Corg_percent,
-    dataset, series, habitat_broad, zonality) %>%
-  mutate(mowing = factor(mowing)) %>%
-  mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
-    "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na()
-
+# Check how the dataset looks like
+beta_data
 
 # Start Analysis -------------------------------------------------------------
 

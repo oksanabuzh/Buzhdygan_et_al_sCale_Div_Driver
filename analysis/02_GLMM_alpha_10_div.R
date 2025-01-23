@@ -20,57 +20,16 @@ habitat_colors = c(
   alpine = "#006600")
 
 # Read and prepare data -------------------------------------------------------
+# This script prepared the following necessary data for all analyses
+# - alpha_data: diversity, ENSPIE, cover and environmental variables for the 10m2 plots
+# - gamma_data: diversity, ENSPIE, cover and environmental variables for the 
+#    100m2 plots
+# - beta_data: diversity, ENSPIE, cover and environmental variables for the
+#    beta scale
+source("analysis/helper_scripts/prepare_data.R")
 
-# SR - species richness
-# ENSPIE - evenness measure calculated as inverse Simpson using species cover
-# cover - is cumulative plant cover
-
-# "data/alpha_beta_gamma_community_variabl.csv" combines all diversity measures and plant cover
-# alpha diversity measures (SR and ENSPIE) include doubled 10 m2 plots,
-# thus "series" (i.e. 100m2 plots), nested in dataset (separate vegetation survey campaign)
-# are fitted as a random effect
-# gamma diversity measures (SR and ENSPIE)include 100m2 plots (i.e. the sample size is half of what we have for the 10m2 plots)
-# beta diversity measures (SR and ENSPIE) are calculated as gamma/alpha
-
-# Read climate data and compund climate variable from PCA analysis in "1_prepare_data/ PCA_environment.R"
-climate_PCA <- read_csv("data/climate_PCA.csv")
-
-# Read all environmental data
-header <- read_csv("data/Environm_variabl.csv") %>%
-  full_join(
-    read_csv("data/climate_PCA.csv"),
-    by = "series"
-  )
-
-# Prepare subset of data for alpha scale (10 m2 plots) -------------------------
-
-alpha <- read_csv("data/alpha_beta_gamma_community_variabl.csv") %>%
-  filter(type == "alpha") %>%
-  unite("metric", c(type, scale, metric), sep = "_") %>%
-  pivot_wider(names_from = metric, values_from = value) %>%
-  full_join(header,
-    by = c("dataset", "plotID", "series", "subplot")
-  ) %>%
-  mutate(dataset = factor(dataset))
-
-str(alpha)
-
-# Remove NAs and select only needed variables
-alpha_data <- alpha %>%
-  dplyr::select(alpha_10_div, alpha_10_ENSPIE,
-    pca1_clima,
-    grazing_intencity, mowing,
-    cover_litter,
-    Tem_range, Prec_Varieb,
-    pH, Corg_percent,
-    dataset, series, habitat_broad,
-    subplot) %>%
-  mutate(mowing = factor(mowing)) %>%
-  mutate(habitat = fct_relevel(habitat_broad, c("saline", "complex", "dry",
-    "wet", "mesic", "fringe", "alpine"))) %>%
-  drop_na()
-
-str(alpha_data)
+# Check how the dataset looks like
+alpha_data
 
 # Start Analysis -------------------------------------------------------------
 
@@ -91,7 +50,6 @@ m <- glmer(alpha_10_div ~
   grazing_intencity + mowing +
   (1 | dataset / series),
 family = "poisson", data = alpha_data)
-
 
 check_convergence(m)
 
@@ -385,7 +343,6 @@ R <- R2 %>%
   bind_rows(R1 %>% filter(!Effect == "Model"))
 
 write_csv(R, file = "results/R2_alpha_SR.csv")
-
 #-----------------------------------------------------------------------------#
 # (1) ENSPIE -------------------------------------------------------
 # ----------------------------------------------------------------------------#
