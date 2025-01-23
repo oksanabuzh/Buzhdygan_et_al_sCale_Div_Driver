@@ -65,3 +65,8 @@ Creates plots in Fig.S5 and Fig.S6 for the results of mixed models testing the e
 ### `Fig_S8.R`
 
 Creates plots in Fig.S8 for the results of mixed models testing the effects of environmental drivers on plant total cover at the 10-m2 and 100-m2 plots.
+
+### `helper_scripts/prepare_data.R`
+
+Helper script to prepare the data for the analysis. This script is sourced in the main scripts
+to avoid cluttering the main scripts with data preparation steps.
