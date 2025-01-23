@@ -260,14 +260,12 @@ grazing_pred_beta_aggr <- get_model_data(m1_1, type = "pred", terms = "grazing_i
 
 Fig.betaaggr_grazing <- ggplot(grazing_pred_beta_aggr, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
-  geom_point(data = beta_data, aes(grazing_intencity, aggregation,
-    fill = habitat, col = habitat),
-  size = 1, alpha = 0.8, pch = 21,
-  position = position_jitter(w = 0.2)) +
-  scale_fill_manual(values = habitat_colors) + 
+  geom_point(data = beta_data, aes(grazing_intencity, aggregation, col = habitat),
+  size = 1, alpha = 0.8, pch = 19,
+  position = position_jitter(width = 0.2)) +
   scale_color_manual(values = habitat_colors) +
   labs(y = "Species aggregation", x = 'Grazing intencity') +
-  geom_line(linetype = 5, size = 0.5, col = "black")
+  geom_line(linetype = 5, linewidth = 0.5, col = "black")
 
 Fig.betaaggr_grazing
 
@@ -275,10 +273,9 @@ Fig.betaaggr_grazing
 Fig.betaaggr_mowing <- ggplot(beta_data, aes(mowing, aggregation)) +
   geom_boxplot(color = "black") +
   labs(y = "Species aggregation", x = 'Mowing') +
-  geom_point(aes(color = habitat, fill = habitat), pch = 21, 
-             position = position_jitter(w = 0.1), size = 3, alpha = 0.8) +
+  geom_point(aes(color = habitat), pch = 19, 
+             position = position_jitter(width = 0.1), size = 3, alpha = 0.8) +
   scale_color_manual(values = habitat_colors) + 
-  scale_fill_manual(values = habitat_colors) +
   labs(color = 'Habitat type')
 
 Fig.betaaggr_mowing
@@ -289,12 +286,11 @@ precipCV_pred_beta_aggr <- get_model_data(m2_1, type = "pred", terms = "Prec_Var
 Fig.betaaggr_precip.CV <- ggplot(precipCV_pred_beta_aggr, aes(x, predicted)) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.1) +
   geom_point(data = beta_data, 
-             aes(Prec_Varieb, aggregation, fill = habitat, col = habitat), 
-             size = 1, alpha = 0.8, pch = 21) +
-  scale_fill_manual(values = habitat_colors) + 
+             aes(Prec_Varieb, aggregation, col = habitat), 
+             size = 1, alpha = 0.8, pch = 19) +
   scale_color_manual(values = habitat_colors) +
   labs(y = "Species aggregation", x = 'Precipitation CV') +
-  geom_line(linetype = 5, size = 0.5, col = "black")
+  geom_line(linetype = 5, linewidth = 0.5, col = "black")
 
 Fig.betaaggr_precip.CV
 
