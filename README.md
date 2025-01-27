@@ -6,13 +6,13 @@ Buzhdygan*, O.Y., Baldauf S., Borovyk D., Vynokurov D., Ladouceur E.R., Chusova 
 Iemelianova S., Budzhak V., Tietjen B., Bezrodnova O., Bezsmertna O., Chorney I., 
 Dembicz I., Dengler J., Didukh Y., Janišová M., Khodosovtsev O., Kucher O., Moysienko I., 
 Tokariuk A., Vasheniak Y., Yavorska O., Chase J.,  Kuzemko A. (2025) 
-Scale-dependent effects of plant diversity drivers in grasslands. Ecology and Evolution,
-in press, https://doi.org/10.22541/au.172534860.07243481/v1 
+Scale-dependent effects of plant diversity drivers in grasslands. Ecology and Evolution, DOI:10.1002/ece3.70941 
+
+*oksana.buzh@fu-berlin.de
 
 - [Read the preprint](https://doi.org/10.22541/au.172534860.07243481/v1)
 
-Please cite code and data like this:
-
+Please cite code and data:
 
 
 ## Abstract
@@ -29,3 +29,4 @@ Each folder contains its own Readme with details on the contents and usage.
 | [data](data)               | Data that are used for analysis                                     |
 | [results](results)         | Result outputs from the analysis                                    |
 |                            |                                                                     |
+
