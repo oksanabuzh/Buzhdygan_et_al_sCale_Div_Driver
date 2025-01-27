@@ -1,4 +1,4 @@
-# Purpose: produce Figure 2
+# Purpose: Helper script to prepare the data for the analysis. This script is sourced in the main scripts to avoid cluttering the main scripts with data preparation steps.
 
 # Load libraries --------------------------------------------------------------
 library(tidyverse)
