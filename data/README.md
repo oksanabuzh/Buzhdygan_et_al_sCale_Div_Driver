@@ -10,7 +10,9 @@ Contains data that are used for analysis
 | -------------------------------------- | ------------------------------------------------------------ |
 | Environm_variab.csv                    | Environmental data                                           |
 | alpha_beta_gamma_community_variabl.csv | Plant diversity measures and plant cover for each scale      |
-| climate_PCA                            | scores from the [PCA analysis](../analysis/01_PCA_climate.R) |
+| climate_PCA.csv                        | scores from the [PCA analysis](../analysis/01_PCA_climate.R) |
+| aggregation.csv                        | intraspecific aggregation proxy for each plot
+|
 
 ## Metadata
 
