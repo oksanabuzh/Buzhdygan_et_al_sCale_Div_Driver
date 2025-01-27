@@ -1,4 +1,4 @@
-# Purpose: Produce FIg. 5 - relationships of beta SR and beta ENSPIE
+# Purpose: Produce Fig. 5 - relationships of beta SR and beta ENSPIE
 #                           with the spatial aggregation proxy
 
 
