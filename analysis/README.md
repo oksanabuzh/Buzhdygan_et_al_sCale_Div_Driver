@@ -3,6 +3,9 @@
 Contains scripts to reproduce PCA analysis, mixed models, and figures from the manuscript.
 The prefixed numbers represent the logical order of the analysis.
 But the files can all be run individually and are independent of each other.
+It is recommended to restart your R session before running each script to avoid any conflicts 
+with data and packages that may have been loaded before and that are not needed
+for the current script.
 
 ## Files
 
