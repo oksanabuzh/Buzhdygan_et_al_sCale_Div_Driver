@@ -5,9 +5,7 @@ This repository contains code and data for the manuscript:
 Buzhdygan*, O., Baldauf S., Borovyk D., Vynokurov D., Ladouceur E., Chusova O., 
 Iemelianova S., Budzhak V., Tietjen B., Bezrodnova O., Bezsmertna O., Chorney I., 
 Dembicz I., Dengler J., Didukh Y., Janišová M., Khodosovtsev O., Kucher O., Moysienko I., 
-Tokariuk A., Vasheniak Y., Yavorska O., Chase J.,  Kuzemko A. (2025) 
-Scale‐Dependent Effects of Plant Diversity Drivers Across Different Grassland Habitats in Ukraine. Ecology and Evolution
-DOI:10.1002/ece3.70941 
+Tokariuk A., Vasheniak Y., Yavorska O., Chase J.,  Kuzemko A. Scale‐Dependent Effects of Plant Diversity Drivers Across Different Grassland Habitats in Ukraine. Ecology and Evolution, 2025. DOI:10.1002/ece3.70941 
 
 *oksana.buzh@fu-berlin.de
 
