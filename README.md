@@ -2,7 +2,7 @@
 
 This repository contains code and data for the manuscript:
 
-Buzhdygan*, O.Y., Baldauf S., Borovyk D., Vynokurov D., Ladouceur E.R., Chusova O., 
+Buzhdygan*, O., Baldauf S., Borovyk D., Vynokurov D., Ladouceur E., Chusova O., 
 Iemelianova S., Budzhak V., Tietjen B., Bezrodnova O., Bezsmertna O., Chorney I., 
 Dembicz I., Dengler J., Didukh Y., Janišová M., Khodosovtsev O., Kucher O., Moysienko I., 
 Tokariuk A., Vasheniak Y., Yavorska O., Chase J.,  Kuzemko A. (2025) 
