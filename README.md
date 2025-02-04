@@ -11,7 +11,7 @@ Tokariuk A., Vasheniak Y., Yavorska O., Chase J.,  Kuzemko A. Scale‐Dependent 
 
 - [Read the preprint](https://doi.org/10.22541/au.172534860.07243481/v1)
 
-Please cite code and data:
+Please cite code and data: [![DOI](https://zenodo.org/badge/786862615.svg)](https://doi.org/10.5281/zenodo.14803137)
 
 
 ## Abstract
